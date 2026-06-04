@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدونتي الخاصة</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
@@ -15,7 +17,7 @@
         #login-screen {
             display: none;
             max-width: 400px; 
-            margin: 120px auto; 
+            margin: 80px auto; 
             padding: 40px;
             background: white;
             border-radius: 15px;
@@ -56,25 +58,30 @@
         .header {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: #fff; 
-            padding: 30px;
+            padding: 25px;
             text-align: center;
             margin-bottom: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .header h1 { font-size: 36px; margin-bottom: 5px; }
-        .header p { opacity: 0.8; }
+        .header h1 { font-size: 28px; }
+        .header .user-info { font-size: 14px; opacity: 0.9; }
         .container { max-width: 800px; margin: 0 auto; padding: 0 20px 40px; }
         .admin-panel {
             background: #fff; padding: 25px; border-radius: 12px;
             margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
         .admin-panel h3 { margin-bottom: 20px; color: #1a1a2e; }
-        .admin-panel input, .admin-panel textarea, .admin-panel select {
+        .admin-panel input, .admin-panel textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
             border: 2px solid #e0e0e0; border-radius: 8px;
             font-family: inherit; font-size: 15px; transition: border 0.3s;
         }
-        .admin-panel input:focus, .admin-panel textarea:focus, .admin-panel select:focus {
+        .admin-panel input:focus, .admin-panel textarea:focus {
             outline: none; border-color: #1a1a2e;
         }
         .admin-panel textarea { min-height: 120px; resize: vertical; }
@@ -96,11 +103,19 @@
             position: relative; transition: transform 0.2s;
         }
         .post:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .post h2 { color: #1a1a2e; margin-bottom: 12px; font-size: 24px; }
+        .post h2 { color: #1a1a2e; margin-bottom: 8px; font-size: 24px; }
+        .post .author { 
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 8px;
+        }
         .post .date { color: #888; font-size: 13px; margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
         .post .content { color: #444; line-height: 2; }
         .post .content img { max-width: 100%; border-radius: 8px; margin: 15px 0; }
-        .post .content video { max-width: 100%; border-radius: 8px; margin: 15px 0; background: #000; }
         .video-wrapper {
             position: relative; padding-bottom: 56.25%; height: 0;
             overflow: hidden; margin: 15px 0; border-radius: 8px; background: #000;
@@ -115,21 +130,23 @@
         .empty-state .icon { font-size: 60px; margin-bottom: 20px; }
         .video-type-selector { display: flex; gap: 15px; margin-bottom: 15px; }
         .video-type-selector label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: normal; }
+        .loading { text-align: center; padding: 40px; color: #888; }
         @media (max-width: 600px) {
             .container { padding: 0 15px 30px; }
-            .header h1 { font-size: 26px; }
+            .header h1 { font-size: 22px; }
             .post { padding: 18px; }
             .btn-group { flex-direction: column; }
         }
     </style>
 </head>
-  <body>
+<body>
 
     <div id="login-screen" class="active">
         <h2>🔒</h2>
         <h2>مدونة خاصة</h2>
-        <p>أدخل كلمة المرور للمتابعة</p>
-        <input type="password" id="password-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPassword()">
+        <p>أدخل اسمك وكلمة المرور</p>
+        <input type="text" id="username-input" placeholder="👤 اسم المستخدم">
+        <input type="password" id="password-input" placeholder="🔑 كلمة المرور" onkeydown="if(event.key==='Enter')checkPassword()">
         <button onclick="checkPassword()">🚪 دخول</button>
         <span id="error-msg" class="error"></span>
     </div>
@@ -137,13 +154,13 @@
     <div id="blog-screen">
         <div class="header">
             <h1>✍️ مدونتي</h1>
-            <p>مساحة خاصة لأفكاري وكتاباتي</p>
+            <span class="user-info">👤 <span id="current-user"></span></span>
         </div>
 
         <div class="container">
             <div class="admin-panel" id="admin-panel" style="display:none;">
                 <h3 id="form-title">📝 مقال جديد</h3>
-                <input type="hidden" id="edit-index" value="-1">
+                <input type="hidden" id="edit-id" value="">
                 
                 <label>📌 عنوان المقال</label>
                 <input type="text" id="post-title" placeholder="ضع عنواناً جذاباً...">
@@ -153,24 +170,22 @@
                 
                 <label>🖼️ رابط الصورة (اختياري)</label>
                 <input type="text" id="post-image" placeholder="https://example.com/صورة.jpg">
-                <p class="help-text">ارفع صورتك على <a href="https://imgbb.com" target="_blank">imgbb.com</a> ثم الصق الرابط هنا</p>
+                <p class="help-text">ارفع صورتك على <a href="https://imgbb.com" target="_blank">imgbb.com</a> ثم الصق الرابط</p>
                 
                 <label style="margin-top:15px;">🎬 نوع الفيديو</label>
                 <div class="video-type-selector">
-                    <label><input type="radio" name="video-type" value="direct" checked onchange="toggleVideoInput()"> 🎥 فيديو مباشر (رابط MP4)</label>
+                    <label><input type="radio" name="video-type" value="direct" checked onchange="toggleVideoInput()"> 🎥 فيديو مباشر</label>
                     <label><input type="radio" name="video-type" value="youtube" onchange="toggleVideoInput()"> ▶️ يوتيوب</label>
                 </div>
                 
                 <div id="direct-video-input">
-                    <label>🎥 رابط الفيديو المباشر (MP4, WebM)</label>
+                    <label>🎥 رابط الفيديو (MP4, WebM)</label>
                     <input type="text" id="post-video-direct" placeholder="https://example.com/فيديو.mp4">
-                    <p class="help-text">ارفع فيديوك على: <a href="https://file.io" target="_blank">file.io</a> أو <a href="https://gofile.io" target="_blank">gofile.io</a> أو <a href="https://mega.nz" target="_blank">MEGA</a> ثم الصق الرابط المباشر هنا.</p>
                 </div>
                 
                 <div id="youtube-video-input" style="display:none;">
-                    <label>▶️ رابط فيديو يوتيوب</label>
+                    <label>▶️ رابط يوتيوب</label>
                     <input type="text" id="post-video-youtube" placeholder="https://www.youtube.com/watch?v=XXXXXXXX">
-                    <p class="help-text">ارفع فيديوك على يوتيوب واجعله "غير مدرج" (Unlisted) للخصوصية</p>
                 </div>
                 
                 <div class="btn-group">
@@ -185,7 +200,9 @@
                 <div style="clear:both;"></div>
             </div>
 
-            <div id="posts-container"></div>
+            <div id="posts-container">
+                <div class="loading">⏳ جاري تحميل المقالات...</div>
+            </div>
 
             <div class="empty-state" id="empty-state" style="display:none;">
                 <div class="icon">📭</div>
@@ -194,155 +211,259 @@
             </div>
         </div>
     </div>
-        <script>
-        const SECRET_PASSWORD = "Goodnight113033meow2026tometo";
-        let posts = JSON.parse(localStorage.getItem('private_blog_posts') || '[]');
+    <script>
+    // ==================== إعدادات Firebase ====================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAAzIRj5YFlckjCd9LpS-Pm0UUCFkdxNng",
+        authDomain: "myblog-6590f.firebaseapp.com",
+        projectId: "myblog-6590f",
+        storageBucket: "myblog-6590f.firebasestorage.app",
+        messagingSenderId: "230767210257",
+        appId: "1:230767210257:web:1bc7b7514552d7177c66b0"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
+    // ==================== الإعدادات ====================
+    const SECRET_PASSWORD = "Goodnight113033meow2026tometo";
+    
+    let posts = [];
+    let currentUser = '';
 
-        const isLoggedIn = sessionStorage.getItem('blog_auth') === 'true';
-        if (isLoggedIn) { showBlog(); } else { showLogin(); }
+    // ========== التحقق من تسجيل الدخول ==========
+    const isLoggedIn = sessionStorage.getItem('blog_auth') === 'true';
+    const savedUser = sessionStorage.getItem('blog_user') || '';
+    
+    if (isLoggedIn && savedUser) {
+        currentUser = savedUser;
+        showBlog();
+    } else {
+        showLogin();
+    }
 
-        function showLogin() {
-            document.getElementById('login-screen').classList.add('active');
-            document.getElementById('blog-screen').classList.remove('active');
+    function showLogin() {
+        document.getElementById('login-screen').classList.add('active');
+        document.getElementById('blog-screen').classList.remove('active');
+        document.getElementById('username-input').focus();
+    }
+
+    function showBlog() {
+        document.getElementById('login-screen').classList.remove('active');
+        document.getElementById('blog-screen').classList.add('active');
+        document.getElementById('current-user').textContent = currentUser;
+        loadPosts();
+    }
+
+    function checkPassword() {
+        const username = document.getElementById('username-input').value.trim();
+        const password = document.getElementById('password-input').value;
+        const errorMsg = document.getElementById('error-msg');
+        
+        if (!username) {
+            errorMsg.textContent = '⚠️ الرجاء إدخال اسم المستخدم';
+            return;
+        }
+        
+        if (password === SECRET_PASSWORD) {
+            currentUser = username;
+            sessionStorage.setItem('blog_auth', 'true');
+            sessionStorage.setItem('blog_user', username);
+            errorMsg.textContent = '';
+            showBlog();
+        } else {
+            errorMsg.textContent = '❌ كلمة المرور غير صحيحة';
+            document.getElementById('password-input').value = '';
             document.getElementById('password-input').focus();
         }
+    }
 
-        function showBlog() {
-            document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('blog-screen').classList.add('active');
-            renderPosts();
-        }
-
-        function checkPassword() {
-            const input = document.getElementById('password-input').value;
-            const errorMsg = document.getElementById('error-msg');
-            if (input === SECRET_PASSWORD) {
-                sessionStorage.setItem('blog_auth', 'true');
-                errorMsg.textContent = '';
-                showBlog();
-            } else {
-                errorMsg.textContent = '❌ كلمة المرور غير صحيحة، حاول مرة أخرى';
-                document.getElementById('password-input').value = '';
-                document.getElementById('password-input').focus();
-            }
-        }
-
-        function logout() {
-            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-                sessionStorage.removeItem('blog_auth');
-                document.getElementById('password-input').value = '';
-                document.getElementById('error-msg').textContent = '';
-                hideAdminPanel();
-                showLogin();
-            }
-        }
-
-        function toggleVideoInput() {
-            const videoType = document.querySelector('input[name="video-type"]:checked').value;
-            document.getElementById('direct-video-input').style.display = videoType === 'direct' ? 'block' : 'none';
-            document.getElementById('youtube-video-input').style.display = videoType === 'youtube' ? 'block' : 'none';
-        }
-
-        function showNewPostForm() {
-            document.getElementById('form-title').textContent = '📝 مقال جديد';
-            document.getElementById('edit-index').value = '-1';
-            document.getElementById('post-title').value = '';
-            document.getElementById('post-content').value = '';
-            document.getElementById('post-image').value = '';
-            document.getElementById('post-video-direct').value = '';
-            document.getElementById('post-video-youtube').value = '';
-            document.querySelector('input[name="video-type"][value="direct"]').checked = true;
-            toggleVideoInput();
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('new-post-btn').style.display = 'none';
-            document.getElementById('post-title').focus();
-            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function editPost(index) {
-            const post = posts[index];
-            document.getElementById('form-title').textContent = '✏️ تعديل المقال';
-            document.getElementById('edit-index').value = index;
-            document.getElementById('post-title').value = post.title;
-            document.getElementById('post-content').value = post.content;
-            document.getElementById('post-image').value = post.image || '';
-            if (post.videoType === 'youtube') {
-                document.querySelector('input[name="video-type"][value="youtube"]').checked = true;
-                document.getElementById('post-video-youtube').value = post.video || '';
-                document.getElementById('post-video-direct').value = '';
-            } else {
-                document.querySelector('input[name="video-type"][value="direct"]').checked = true;
-                document.getElementById('post-video-direct').value = post.video || '';
-                document.getElementById('post-video-youtube').value = '';
-            }
-            toggleVideoInput();
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('new-post-btn').style.display = 'none';
-            document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function cancelEdit() { hideAdminPanel(); }
-
-        function hideAdminPanel() {
-            document.getElementById('admin-panel').style.display = 'none';
-            document.getElementById('new-post-btn').style.display = 'inline-block';
-            document.getElementById('edit-index').value = '-1';
-        }
-
-        function savePost() {
-            const title = document.getElementById('post-title').value.trim();
-            const content = document.getElementById('post-content').value.trim();
-            const image = document.getElementById('post-image').value.trim();
-            const editIndex = parseInt(document.getElementById('edit-index').value);
-            const videoType = document.querySelector('input[name="video-type"]:checked').value;
-            let video = '';
-            if (videoType === 'direct') { video = document.getElementById('post-video-direct').value.trim(); }
-            else { video = document.getElementById('post-video-youtube').value.trim(); }
-            if (!title) { alert('⚠️ الرجاء إدخال عنوان المقال'); document.getElementById('post-title').focus(); return; }
-            if (!content) { alert('⚠️ الرجاء إدخال محتوى المقال'); document.getElementById('post-content').focus(); return; }
-            const postData = {
-                title: title, content: content, image: image, video: video, videoType: videoType,
-                date: new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-            };
-            if (editIndex >= 0 && editIndex < posts.length) { posts[editIndex] = postData; }
-            else { posts.push(postData); }
-            localStorage.setItem('private_blog_posts', JSON.stringify(posts));
+    function logout() {
+        if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+            sessionStorage.removeItem('blog_auth');
+            sessionStorage.removeItem('blog_user');
+            document.getElementById('username-input').value = '';
+            document.getElementById('password-input').value = '';
+            document.getElementById('error-msg').textContent = '';
             hideAdminPanel();
-            renderPosts();
+            showLogin();
         }
+    }
 
-        function deletePost(index) {
-            if (confirm('🗑️ هل أنت متأكد من حذف هذا المقال؟ لا يمكن التراجع عن هذا الإجراء.')) {
-                posts.splice(index, 1);
-                localStorage.setItem('private_blog_posts', JSON.stringify(posts));
-                renderPosts();
+    // ========== تبديل نوع الفيديو ==========
+    function toggleVideoInput() {
+        const videoType = document.querySelector('input[name="video-type"]:checked').value;
+        document.getElementById('direct-video-input').style.display = videoType === 'direct' ? 'block' : 'none';
+        document.getElementById('youtube-video-input').style.display = videoType === 'youtube' ? 'block' : 'none';
+    }
+
+    // ========== تحميل المقالات من Firestore ==========
+    async function loadPosts() {
+        const container = document.getElementById('posts-container');
+        container.innerHTML = '<div class="loading">⏳ جاري تحميل المقالات...</div>';
+        
+        try {
+            const snapshot = await db.collection('posts').orderBy('date', 'desc').get();
+            posts = [];
+            snapshot.forEach(doc => {
+                posts.push({ id: doc.id, ...doc.data() });
+            });
+            renderPosts();
+        } catch (error) {
+            console.error('خطأ:', error);
+            container.innerHTML = '<div class="loading">❌ حدث خطأ. تأكد من تفعيل Firestore في وضع الاختبار.</div>';
+        }
+    }
+
+    // ========== لوحة التحكم ==========
+    function showNewPostForm() {
+        document.getElementById('form-title').textContent = '📝 مقال جديد';
+        document.getElementById('edit-id').value = '';
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
+        document.getElementById('post-image').value = '';
+        document.getElementById('post-video-direct').value = '';
+        document.getElementById('post-video-youtube').value = '';
+        document.querySelector('input[name="video-type"][value="direct"]').checked = true;
+        toggleVideoInput();
+        document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('new-post-btn').style.display = 'none';
+        document.getElementById('post-title').focus();
+        document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function editPost(postId) {
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+        
+        document.getElementById('form-title').textContent = '✏️ تعديل المقال';
+        document.getElementById('edit-id').value = postId;
+        document.getElementById('post-title').value = post.title;
+        document.getElementById('post-content').value = post.content;
+        document.getElementById('post-image').value = post.image || '';
+        
+        if (post.videoType === 'youtube') {
+            document.querySelector('input[name="video-type"][value="youtube"]').checked = true;
+            document.getElementById('post-video-youtube').value = post.video || '';
+            document.getElementById('post-video-direct').value = '';
+        } else {
+            document.querySelector('input[name="video-type"][value="direct"]').checked = true;
+            document.getElementById('post-video-direct').value = post.video || '';
+            document.getElementById('post-video-youtube').value = '';
+        }
+        toggleVideoInput();
+        document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('new-post-btn').style.display = 'none';
+        document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() { hideAdminPanel(); }
+
+    function hideAdminPanel() {
+        document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('new-post-btn').style.display = 'inline-block';
+        document.getElementById('edit-id').value = '';
+    }
+
+    async function savePost() {
+        const title = document.getElementById('post-title').value.trim();
+        const content = document.getElementById('post-content').value.trim();
+        const image = document.getElementById('post-image').value.trim();
+        const editId = document.getElementById('edit-id').value;
+        const videoType = document.querySelector('input[name="video-type"]:checked').value;
+        let video = '';
+        if (videoType === 'direct') { video = document.getElementById('post-video-direct').value.trim(); }
+        else { video = document.getElementById('post-video-youtube').value.trim(); }
+        
+        if (!title) { alert('⚠️ الرجاء إدخال عنوان المقال'); return; }
+        if (!content) { alert('⚠️ الرجاء إدخال محتوى المقال'); return; }
+
+        const postData = {
+            title: title,
+            content: content,
+            image: image,
+            video: video,
+            videoType: videoType,
+            author: currentUser,
+            date: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+            if (editId) {
+                await db.collection('posts').doc(editId).update(postData);
+            } else {
+                await db.collection('posts').add(postData);
+            }
+            hideAdminPanel();
+            loadPosts();
+        } catch (error) {
+            console.error('خطأ:', error);
+            alert('❌ حدث خطأ. تأكد من تفعيل Firestore.');
+        }
+    }
+
+    async function deletePost(postId) {
+        if (confirm('🗑️ هل أنت متأكد من حذف هذا المقال؟')) {
+            try {
+                await db.collection('posts').doc(postId).delete();
+                loadPosts();
+            } catch (error) {
+                console.error('خطأ:', error);
+                alert('❌ حدث خطأ في الحذف.');
             }
         }
-
+    }
+               // ========== عرض المقالات ==========
         function renderPosts() {
             const container = document.getElementById('posts-container');
             const emptyState = document.getElementById('empty-state');
-            if (posts.length === 0) { container.innerHTML = ''; emptyState.style.display = 'block'; return; }
+
+            if (posts.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
             emptyState.style.display = 'none';
-            const reversedPosts = [...posts].reverse();
-            container.innerHTML = reversedPosts.map((post, reversedIndex) => {
-                const originalIndex = posts.length - 1 - reversedIndex;
+            
+            container.innerHTML = posts.map(post => {
                 let imageHTML = '';
-                if (post.image) { imageHTML = `<img src="${escapeHTML(post.image)}" alt="صورة المقال" loading="lazy" onerror="this.style.display='none'">`; }
+                if (post.image) { imageHTML = `<img src="${escapeHTML(post.image)}" alt="صورة" loading="lazy" onerror="this.style.display='none'">`; }
+                
                 let videoHTML = '';
                 if (post.video) {
                     if (post.videoType === 'youtube') {
                         const videoId = extractYouTubeID(post.video);
-                        if (videoId) { videoHTML = `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${videoId}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`; }
+                        if (videoId) { videoHTML = `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`; }
                         else { videoHTML = `<p>🎬 <a href="${escapeHTML(post.video)}" target="_blank">رابط الفيديو</a></p>`; }
                     } else {
                         const isVideoFile = /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(post.video);
-                        if (isVideoFile || post.video.includes('video')) { videoHTML = `<div class="video-wrapper"><video controls preload="metadata" playsinline><source src="${escapeHTML(post.video)}" type="video/mp4">متصفحك لا يدعم تشغيل الفيديو.</video></div>`; }
+                        if (isVideoFile || post.video.includes('video')) { videoHTML = `<div class="video-wrapper"><video controls preload="metadata" playsinline><source src="${escapeHTML(post.video)}" type="video/mp4"></video></div>`; }
                         else { videoHTML = `<p>🎬 <a href="${escapeHTML(post.video)}" target="_blank">مشاهدة الفيديو</a></p>`; }
                     }
                 }
+                
+                let dateText = '';
+                if (post.date && post.date.toDate) {
+                    dateText = post.date.toDate().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                } else {
+                    dateText = 'قبل قليل';
+                }
+                
                 let contentHTML = escapeHTML(post.content).replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
-                return `<div class="post"><h2>${escapeHTML(post.title)}</h2><div class="date">📅 ${escapeHTML(post.date)}</div>${imageHTML}${videoHTML}<div class="content">${contentHTML}</div><div class="post-actions"><button class="btn btn-outline" onclick="editPost(${originalIndex})">✏️ تعديل</button><button class="btn btn-danger" onclick="deletePost(${originalIndex})">🗑️ حذف</button></div></div>`;
+                
+                return `<div class="post">
+                    <h2>${escapeHTML(post.title)}</h2>
+                    <span class="author">👤 ${escapeHTML(post.author || 'مجهول')}</span>
+                    <div class="date">📅 ${dateText}</div>
+                    ${imageHTML}
+                    ${videoHTML}
+                    <div class="content">${contentHTML}</div>
+                    <div class="post-actions">
+                        <button class="btn btn-outline" onclick="editPost('${post.id}')">✏️ تعديل</button>
+                        <button class="btn btn-danger" onclick="deletePost('${post.id}')">🗑️ حذف</button>
+                    </div>
+                </div>`;
             }).join('');
         }
 
@@ -355,4 +476,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
