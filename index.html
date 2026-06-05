@@ -3,103 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الورد</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=El+Messiri:wght@700&display=swap" rel="stylesheet">
+    <title>مدونتي</title>
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Cairo', sans-serif; background: #f5f5f0; color: #1a1a1a; }
-        :root { --black: #1a1a1a; --green: #2d6a4f; --pink: #d08c9e; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma; background: #f0f2f5; }
         /* شاشة الدخول */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1a1a1a, #2d6a4f);
-            display: flex; align-items: center; justify-content: center; z-index: 999;
+            background: linear-gradient(135deg, #1a1a2e, #2d6a4f);
+            display: flex; align-items: center; justify-content: center;
         }
         .login-box {
-            background: rgba(255,255,255,0.95); padding: 40px; border-radius: 20px;
-            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            background: white; padding: 40px; border-radius: 15px;
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             width: 90%; max-width: 400px;
         }
-        .app-title {
-            font-family: 'El Messiri', serif; font-size: 48px; font-weight: bold;
-            background: linear-gradient(45deg, #d08c9e, #2d6a4f);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-        }
+        .login-box h2 { color: #1a1a2e; margin-bottom: 15px; }
         .login-box input {
             width: 100%; padding: 12px; margin: 10px 0;
-            border: 1px solid #ddd; border-radius: 25px; font-size: 16px; text-align: center;
+            border: 1px solid #ddd; border-radius: 25px;
+            font-size: 16px; text-align: center;
         }
         .login-box button {
-            width: 100%; padding: 12px; background: #2d6a4f; color: white;
-            border: none; border-radius: 25px; font-size: 18px; cursor: pointer; margin-top: 15px;
+            width: 100%; padding: 12px; background: #2d6a4f;
+            color: white; border: none; border-radius: 25px;
+            font-size: 18px; cursor: pointer; margin-top: 10px;
         }
-        .error { color: #d08c9e; margin-top: 10px; }
-        /* التطبيق */
-        #app-container { display: none; }
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: white; border-top: 1px solid #eee;
-            display: flex; justify-content: space-around; padding: 10px 0; z-index: 100;
+        .error { color: #e74c3c; margin-top: 10px; }
+
+        /* شاشة المدونة */
+        #blog-screen { display: none; padding: 20px 20px 40px; }
+        .header {
+            background: #1a1a2e; color: white; padding: 25px;
+            text-align: center; margin-bottom: 30px; border-radius: 12px;
         }
-        .bottom-nav button { background: none; border: none; font-size: 22px; color: #888; cursor: pointer; }
-        .bottom-nav button.active { color: #2d6a4f; }
-        .screen { display: none; padding: 20px 20px 70px; }
-        .screen.active { display: block; }
-        /* المنشورات */
-        .post { background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .post-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #d08c9e; object-fit: cover; }
-        .post-author { font-weight: bold; }
-        .post-time { color: #888; font-size: 12px; }
-        .post-content { margin: 10px 0; }
-        .post-image, .post-video { width: 100%; border-radius: 12px; margin: 10px 0; }
-        .post-actions { display: flex; gap: 20px; margin-top: 10px; }
-        .post-actions button { background: none; border: none; font-size: 18px; cursor: pointer; }
-        .comment-section { margin-top: 10px; }
-        .comment { padding: 5px 0; font-size: 14px; border-bottom: 1px dotted #eee; }
-        .comment-input { display: flex; gap: 5px; margin-top: 10px; }
-        .comment-input input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 20px; }
-        .comment-input button { background: #2d6a4f; color: white; border: none; border-radius: 20px; padding: 8px 15px; }
-        .profile-header { text-align: center; padding: 20px; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #d08c9e; object-fit: cover; }
-        .follow-btn { background: #2d6a4f; color: white; border: none; padding: 8px 25px; border-radius: 25px; cursor: pointer; }
-        .search-bar { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 25px; margin-bottom: 20px; }
-        .chat-list { list-style: none; }
-        .chat-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; }
-        .notification { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
+        .header h1 { font-size: 32px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .admin-panel {
+            background: white; padding: 20px; border-radius: 12px;
+            margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .admin-panel textarea, .admin-panel input {
+            width: 100%; padding: 10px; margin: 8px 0;
+            border: 1px solid #ddd; border-radius: 8px;
+            font-family: inherit; font-size: 15px;
+        }
+        .btn {
+            padding: 10px 25px; border: none; border-radius: 20px;
+            cursor: pointer; font-size: 15px; font-weight: bold;
+        }
+        .btn-primary { background: #2d6a4f; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-outline { background: transparent; border: 2px solid #1a1a2e; color: #1a1a2e; }
+        .post {
+            background: white; padding: 20px; border-radius: 12px;
+            margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .post h3 { color: #1a1a2e; margin-bottom: 8px; }
+        .post .date { color: #888; font-size: 13px; margin-bottom: 12px; }
+        .post .content { line-height: 1.8; }
+        .post img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+        .post-actions { margin-top: 15px; }
+        .post-actions button { margin-left: 5px; }
     </style>
 </head>
 <body>
 
+<!-- شاشة تسجيل الدخول -->
 <div id="login-screen">
     <div class="login-box">
-        <div class="app-title">الورد</div>
-        <input type="text" id="username-input" placeholder="اسم المستخدم">
+        <h2>🔒 مدونتي</h2>
+        <p>أدخل كلمة المرور للمتابعة</p>
         <input type="password" id="password-input" placeholder="كلمة المرور">
         <button onclick="login()">دخول</button>
         <div class="error" id="error-msg"></div>
     </div>
 </div>
 
-<div id="app-container">
-    <div id="home-screen" class="screen active"></div>
-    <div id="explore-screen" class="screen"></div>
-    <div id="post-screen" class="screen"></div>
-    <div id="profile-screen" class="screen"></div>
-    <div id="notifications-screen" class="screen"></div>
-    <div id="messages-screen" class="screen"></div>
+<!-- شاشة المدونة -->
+<div id="blog-screen">
+    <div class="header">
+        <h1>✍️ مدونتي</h1>
+    </div>
+    <div class="container">
+        <!-- لوحة كتابة منشور جديد -->
+        <div class="admin-panel" id="new-post-panel">
+            <h3>📝 منشور جديد</h3>
+            <input type="text" id="post-title" placeholder="عنوان المنشور">
+            <textarea id="post-content" rows="4" placeholder="اكتب شيئاً..."></textarea>
+            <input type="text" id="post-image-url" placeholder="رابط صورة (اختياري)">
+            <div style="margin-top:10px;">
+                <button class="btn btn-primary" onclick="addPost()">نشر</button>
+            </div>
+        </div>
 
-    <div class="bottom-nav">
-        <button onclick="navigateTo('home')" id="nav-home" class="active">🏠</button>
-        <button onclick="navigateTo('explore')" id="nav-explore">🔍</button>
-        <button onclick="openNewPost()" id="nav-post">➕</button>
-        <button onclick="navigateTo('notifications')" id="nav-notifications">❤️</button>
-        <button onclick="navigateTo('profile')" id="nav-profile">👤</button>
+        <!-- قائمة المنشورات -->
+        <div id="posts-container">
+            <p>⏳ جاري تحميل المنشورات...</p>
+        </div>
     </div>
 </div>
 <script>
@@ -115,294 +119,122 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // ==================== Supabase ====================
-    const SUPABASE_URL = "https://newffwrgwdatwtfawava.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_qHxOUJ-kDQ03Pov0uJw5qQ_Deuz43oH";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ==================== المتغيرات ====================
     const SECRET_PASSWORD = "Goodnight113033meow2026tometo";
     let currentUser = null;
-    let allUsers = [];
 
-    // دوال مساعدة
-    function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-    function formatTime(ts) { if (!ts || !ts.toDate) return 'الآن'; const d = new Date(); const t = ts.toDate(); const diff = Math.floor((d - t) / 1000); if (diff < 60) return 'الآن'; if (diff < 3600) return Math.floor(diff / 60) + ' د'; if (diff < 86400) return Math.floor(diff / 3600) + ' س'; return t.toLocaleDateString('ar-EG'); }
-
-    // إنشاء / جلب مستخدم
-    async function getUserData(username) {
-        const docRef = db.collection('users').doc(username);
-        const doc = await docRef.get();
-        if (doc.exists) return { uid: doc.id, ...doc.data() };
-        const newUser = {
-            username, avatar: '', bio: '', following: [], followers: [], saved: [],
-            joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await docRef.set(newUser);
-        return { uid: username, ...newUser };
-    }
-
-    // ✅ تسجيل الدخول
-    async function login() {
-        const username = document.getElementById('username-input').value.trim();
+    // ==================== الدخول ====================
+    function login() {
         const password = document.getElementById('password-input').value;
         const errorMsg = document.getElementById('error-msg');
-        errorMsg.textContent = '';
-        if (!username) return errorMsg.textContent = '⚠️ أدخل اسم المستخدم';
-        if (password !== SECRET_PASSWORD) return errorMsg.textContent = '❌ كلمة مرور خاطئة';
-
-        try {
-            currentUser = await getUserData(username);
-            sessionStorage.setItem('blog_auth', 'true');
-            sessionStorage.setItem('blog_user', username);
+        if (password === SECRET_PASSWORD) {
+            sessionStorage.setItem('blog_logged_in', 'true');
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
-            navigateTo('home');
-            loadInitialData();
-        } catch (e) {
-            errorMsg.textContent = '❌ فشل الاتصال بقاعدة البيانات. تأكد من تفعيل Firestore بوضع الاختبار.';
+            document.getElementById('blog-screen').style.display = 'block';
+            loadPosts();
+        } else {
+            errorMsg.textContent = '❌ كلمة مرور غير صحيحة';
         }
     }
 
     // استعادة الجلسة
-    (function restore() {
-        if (sessionStorage.getItem('blog_auth') === 'true') {
-            const saved = sessionStorage.getItem('blog_user');
-            if (saved) getUserData(saved).then(u => {
-                currentUser = u;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-container').style.display = 'block';
-                navigateTo('home');
-                loadInitialData();
-            }).catch(() => sessionStorage.clear());
+    if (sessionStorage.getItem('blog_logged_in') === 'true') {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('blog-screen').style.display = 'block';
+        loadPosts();
+    }
+
+    function logout() {
+        sessionStorage.removeItem('blog_logged_in');
+        location.reload();
+    }
+
+    // ==================== إدارة المنشورات ====================
+    async function addPost() {
+        const title = document.getElementById('post-title').value.trim();
+        const content = document.getElementById('post-content').value.trim();
+        const imageUrl = document.getElementById('post-image-url').value.trim();
+        if (!title || !content) {
+            alert('الرجاء كتابة عنوان ومحتوى');
+            return;
         }
-    })();
-
-    async function loadInitialData() {
-        await loadAllUsers();
-        await loadHomePosts();
-    }
-
-    async function loadAllUsers() {
-        const snap = await db.collection('users').get();
-        allUsers = [];
-        snap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
-    }
-
-    function logout() { sessionStorage.clear(); location.reload(); }
-</script>
-<script>
-    function navigateTo(screen) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-        const screens = { home: 'home-screen', explore: 'explore-screen', notifications: 'notifications-screen', profile: 'profile-screen', messages: 'messages-screen' };
-        const navs = { home: 'nav-home', explore: 'nav-explore', notifications: 'nav-notifications', profile: 'nav-profile' };
-        if (screens[screen]) document.getElementById(screens[screen]).classList.add('active');
-        if (navs[screen]) document.getElementById(navs[screen]).classList.add('active');
-        if (screen === 'home') loadHomePosts();
-        else if (screen === 'explore') loadExplore();
-        else if (screen === 'notifications') loadNotifications();
-        else if (screen === 'profile') loadProfile(currentUser.username);
-        else if (screen === 'messages') loadMessages();
-    }
-
-    async function loadHomePosts() {
-        const container = document.getElementById('home-screen');
-        container.innerHTML = '<div style="text-align:center;padding:40px;">⏳ تحميل...</div>';
-        const postsSnap = await db.collection('posts').orderBy('timestamp', 'desc').limit(20).get();
-        let html = '';
-        postsSnap.forEach(doc => html += renderPost({ id: doc.id, ...doc.data() }));
-        container.innerHTML = html || '<p style="text-align:center;">لا توجد منشورات.</p>';
-    }
-
-    function renderPost(post) {
-        const isLiked = post.likes && post.likes.includes(currentUser.username);
-        const likeCount = post.likes ? post.likes.length : 0;
-        const commentCount = post.comments ? post.comments.length : 0;
-        let mediaHTML = '';
-        if (post.imageUrl) mediaHTML += `<img src="${post.imageUrl}" class="post-image">`;
-        if (post.videoUrl) mediaHTML += `<video class="post-video" controls><source src="${post.videoUrl}"></video>`;
-        return `
-        <div class="post">
-            <div class="post-header">
-                <img src="${post.authorAvatar || 'data:image/svg+xml,...'}" class="post-avatar">
-                <div>
-                    <span class="post-author">${post.author}</span>
-                    <div class="post-time">${formatTime(post.timestamp)}</div>
-                </div>
-                ${post.author === currentUser.username ? `<button onclick="editPost('${post.id}')">✏️</button><button onclick="deletePostConfirm('${post.id}')">🗑️</button>` : ''}
-            </div>
-            <div class="post-content">${escapeHTML(post.content).replace(/\n/g,'<br>')}</div>
-            ${mediaHTML}
-            <div class="post-actions">
-                <button class="${isLiked?'liked':''}" onclick="toggleLike('${post.id}')">❤️ ${likeCount}</button>
-                <button onclick="focusComment('${post.id}')">💬 ${commentCount}</button>
-            </div>
-            <div class="comment-section">
-                ${post.comments ? post.comments.slice(0,3).map(c => `<div class="comment"><strong>${c.username}</strong> ${c.text}</div>`).join('') : ''}
-                <div class="comment-input">
-                    <input type="text" id="comment-input-${post.id}" placeholder="تعليق...">
-                    <button onclick="addComment('${post.id}')">نشر</button>
-                </div>
-            </div>
-        </div>`;
-    }
-
-    async function toggleLike(postId) {
-        const ref = db.collection('posts').doc(postId);
-        const post = (await ref.get()).data();
-        let likes = post.likes || [];
-        if (likes.includes(currentUser.username)) likes = likes.filter(u => u !== currentUser.username);
-        else { likes.push(currentUser.username); if (post.author !== currentUser.username) addNotification(post.author, 'like', postId); }
-        await ref.update({ likes });
-        loadHomePosts();
-    }
-
-    async function addComment(postId) {
-        const input = document.getElementById(`comment-input-${postId}`);
-        const text = input.value.trim();
-        if (!text) return;
-        const ref = db.collection('posts').doc(postId);
-        await ref.update({ comments: firebase.firestore.FieldValue.arrayUnion({ username: currentUser.username, text, timestamp: new Date() }) });
-        const post = (await ref.get()).data();
-        if (post.author !== currentUser.username) addNotification(post.author, 'comment', postId, text);
-        input.value = '';
-        loadHomePosts();
-    }
-
-    function focusComment(postId) { document.getElementById(`comment-input-${postId}`).focus(); }
-
-    async function deletePostConfirm(postId) {
-        if (confirm('متأكد؟')) { await db.collection('posts').doc(postId).delete(); loadHomePosts(); }
-    }
-
-    async function editPost(postId) {
-        const doc = await db.collection('posts').doc(postId).get();
-        const post = doc.data();
-        if (post.author !== currentUser.username) return alert('لا يمكنك تعديل منشور غيرك');
-        const newContent = prompt('تعديل المنشور:', post.content);
-        if (newContent) { await db.collection('posts').doc(postId).update({ content: newContent }); loadHomePosts(); }
-    }
-
-    function addNotification(recipient, type, postId, text = '') {
-        db.collection('notifications').add({
-            recipient, sender: currentUser.username, type, postId, text,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(), read: false
-        });
-    }
-</script>
-<script>
-    // ---------- الملف الشخصي ----------
-    async function loadProfile(username) {
-        const user = allUsers.find(u => u.uid === username) || await getUserData(username);
-        const container = document.getElementById('profile-screen');
-        const isOwn = currentUser.username === username;
-        const isFollowing = currentUser.following && currentUser.following.includes(username);
-        container.innerHTML = `
-            <div class="profile-header">
-                <img src="${user.avatar || 'data:image/svg+xml,...'}" class="profile-avatar">
-                <h2>${user.username}</h2>
-                <p>${user.bio || ''}</p>
-                <div>📝 ${user.postCount || 0} | 👥 ${user.followers?.length || 0} متابع | 👤 ${user.following?.length || 0} يتابع</div>
-                ${isOwn ? `<button onclick="editProfile()">تعديل</button> <button onclick="logout()">خروج</button>`
-                : `<button class="follow-btn" onclick="toggleFollow('${username}')">${isFollowing ? 'إلغاء المتابعة' : 'متابعة'}</button>`}
-            </div>
-            <h3>المنشورات</h3>
-            <div id="user-posts"></div>`;
-        const snap = await db.collection('posts').where('author', '==', username).orderBy('timestamp', 'desc').get();
-        let postsHTML = '';
-        snap.forEach(doc => postsHTML += renderPost({ id: doc.id, ...doc.data() }));
-        document.getElementById('user-posts').innerHTML = postsHTML || '<p>لا منشورات.</p>';
-    }
-
-    async function toggleFollow(username) {
-        if (!currentUser.following) currentUser.following = [];
-        const idx = currentUser.following.indexOf(username);
-        if (idx > -1) currentUser.following.splice(idx, 1);
-        else { currentUser.following.push(username); addNotification(username, 'follow', null); }
-        await db.collection('users').doc(currentUser.username).update({ following: currentUser.following });
-        const otherRef = db.collection('users').doc(username);
-        const otherDoc = await otherRef.get();
-        let followers = otherDoc.data().followers || [];
-        if (idx > -1) followers = followers.filter(u => u !== currentUser.username);
-        else followers.push(currentUser.username);
-        await otherRef.update({ followers });
-        loadProfile(username);
-    }
-
-    async function editProfile() {
-        const bio = prompt('نبذة:', currentUser.bio);
-        if (bio !== null) { await db.collection('users').doc(currentUser.username).update({ bio }); currentUser.bio = bio; }
-        const file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*';
-        file.onchange = async e => {
-            const f = e.target.files[0]; if (!f) return;
-            const name = `avatar_${currentUser.username}`;
-            const { error } = await supabase.storage.from('media').upload(name, f, { upsert: true });
-            if (error) return alert('فشل الرفع');
-            const { data } = supabase.storage.from('media').getPublicUrl(name);
-            await db.collection('users').doc(currentUser.username).update({ avatar: data.publicUrl });
-            currentUser.avatar = data.publicUrl;
-            loadProfile(currentUser.username);
-        };
-        file.click();
-    }
-
-    // ---------- إنشاء منشور ----------
-    function openNewPost() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('post-screen').classList.add('active');
-        document.getElementById('post-screen').innerHTML = `
-            <h2>📝 منشور جديد</h2>
-            <input type="file" id="media-file" accept="image/*,video/*">
-            <textarea id="post-content-input" placeholder="ماذا تريد أن تشارك؟" style="width:100%;min-height:100px;padding:10px;margin:10px 0;"></textarea>
-            <button onclick="publishPost()" style="width:100%;padding:12px;background:#2d6a4f;color:white;border:none;border-radius:25px;">نشر</button>
-            <button onclick="navigateTo('home')" style="width:100%;margin-top:10px;">إلغاء</button>
-        `;
-    }
-
-    async function publishPost() {
-        const content = document.getElementById('post-content-input').value.trim();
-        const file = document.getElementById('media-file').files[0];
-        if (!content && !file) return alert('أضف محتوى أو ملف');
-        let imageUrl = '', videoUrl = '';
-        if (file) {
-            const ext = file.name.split('.').pop();
-            const name = `${currentUser.username}_${Date.now()}.${ext}`;
-            const { error } = await supabase.storage.from('media').upload(name, file);
-            if (error) return alert('فشل رفع الملف');
-            const { data } = supabase.storage.from('media').getPublicUrl(name);
-            file.type.startsWith('image/') ? imageUrl = data.publicUrl : videoUrl = data.publicUrl;
+        try {
+            await db.collection('posts').add({
+                title,
+                content,
+                imageUrl,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            // إعادة تعيين الحقول
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-image-url').value = '';
+            loadPosts();
+        } catch (e) {
+            alert('فشل النشر: ' + e.message);
         }
-        await db.collection('posts').add({
-            author: currentUser.username, authorAvatar: currentUser.avatar || '', content,
-            imageUrl, videoUrl, likes: [], comments: [],
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        await db.collection('users').doc(currentUser.username).update({ postCount: firebase.firestore.FieldValue.increment(1) });
-        navigateTo('home');
     }
 
-    // ---------- الإشعارات ----------
-    async function loadNotifications() {
-        const snap = await db.collection('notifications').where('recipient', '==', currentUser.username).orderBy('timestamp', 'desc').limit(20).get();
-        let html = '';
-        snap.forEach(doc => {
-            const n = doc.data();
-            html += `<div class="notification"><strong>${n.sender}</strong> ${n.type==='like'?'أعجب بمنشورك':n.type==='comment'?'علّق: '+n.text:'تابعك'}</div>`;
-        });
-        document.getElementById('notifications-screen').innerHTML = html || '<p>لا إشعارات.</p>';
+    async function deletePost(postId) {
+        if (confirm('متأكد من حذف المنشور؟')) {
+            await db.collection('posts').doc(postId).delete();
+            loadPosts();
+        }
     }
 
-    // ---------- الرسائل ----------
-    function loadMessages() {
-        document.getElementById('messages-screen').innerHTML = '<p>الرسائل غير مفعلة حالياً.</p>';
+    async function editPost(postId, currentTitle, currentContent, currentImage) {
+        const newTitle = prompt('العنوان الجديد:', currentTitle);
+        if (newTitle === null) return;
+        const newContent = prompt('المحتوى الجديد:', currentContent);
+        if (newContent === null) return;
+        const newImage = prompt('رابط الصورة (اتركه فارغاً إذا لم ترد تغييره):', currentImage);
+        try {
+            await db.collection('posts').doc(postId).update({
+                title: newTitle,
+                content: newContent,
+                imageUrl: newImage || ''
+            });
+            loadPosts();
+        } catch (e) {
+            alert('فشل التعديل: ' + e.message);
+        }
     }
 
-    // ---------- الاستكشاف ----------
-    function loadExplore() {
-        document.getElementById('explore-screen').innerHTML = `
-            <input class="search-bar" placeholder="🔍 بحث...">
-            <div id="search-results"></div>`;
+    // ==================== عرض المنشورات ====================
+    async function loadPosts() {
+        const container = document.getElementById('posts-container');
+        container.innerHTML = '<p>⏳ تحميل...</p>';
+        try {
+            const snapshot = await db.collection('posts').orderBy('timestamp', 'desc').get();
+            if (snapshot.empty) {
+                container.innerHTML = '<p>لا توجد منشورات بعد.</p>';
+                return;
+            }
+            let html = '';
+            snapshot.forEach(doc => {
+                const post = doc.data();
+                const date = post.timestamp ? post.timestamp.toDate().toLocaleString('ar-EG') : '';
+                html += `
+                <div class="post">
+                    <h3>${escapeHTML(post.title)}</h3>
+                    <div class="date">📅 ${date}</div>
+                    <div class="content">${escapeHTML(post.content).replace(/\n/g, '<br>')}</div>
+                    ${post.imageUrl ? `<img src="${escapeHTML(post.imageUrl)}" alt="صورة">` : ''}
+                    <div class="post-actions">
+                        <button class="btn btn-outline" onclick="editPost('${doc.id}', '${escapeHTML(post.title)}', '${escapeHTML(post.content)}', '${escapeHTML(post.imageUrl || '')}')">✏️ تعديل</button>
+                        <button class="btn btn-danger" onclick="deletePost('${doc.id}')">🗑️ حذف</button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = '<p>❌ فشل تحميل المنشورات. تأكد من تفعيل Firestore.</p>';
+        }
+    }
+
+    function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
 </script>
 </body>
