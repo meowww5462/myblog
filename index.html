@@ -157,6 +157,184 @@
         <button onclick="navigateTo('profile')" id="nav-profile">👤</button>
     </div>
 </div>
+    <script>
+    // ==================== Firebase ====================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAAzIRj5YFlckjCd9LpS-Pm0UUCFkdxNng",
+        authDomain: "myblog-6590f.firebaseapp.com",
+        projectId: "myblog-6590f",
+        storageBucket: "myblog-6590f.firebasestorage.app",
+        messagingSenderId: "230767210257",
+        appId: "1:230767210257:web:1bc7b7514552d7177c66b0"
+    };
+    
+    let db; // سنخزن مرجع Firestore هنا
+    let firestoreReady = false;
+
+    // محاولة تهيئة Firebase و Firestore
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        console.log('✅ Firebase تمت تهيئته');
+    } catch (e) {
+        alert('❌ فشل تهيئة Firebase: ' + e.message);
+    }
+
+    // اختبار اتصال Firestore بشكل صريح
+    (async function testFirestore() {
+        try {
+            if (!db) throw new Error('db غير معرف');
+            // كتابة وثيقة اختبار
+            await db.collection('_test_').doc('_conn_').set({ test: true, timestamp: new Date() });
+            console.log('✅ Firestore يعمل - الكتابة نجحت');
+            firestoreReady = true;
+            // محاولة قراءة للتأكد
+            const doc = await db.collection('_test_').doc('_conn_').get();
+            if (doc.exists) {
+                console.log('✅ Firestore يعمل - القراءة نجحت');
+            }
+        } catch (e) {
+            console.error('❌ فشل اختبار Firestore:', e);
+            firestoreReady = false;
+            alert('❌ فشل الاتصال بقاعدة بيانات Firestore.\nتأكد من أن Firestore مفعل في وضع الاختبار (Test mode).\nالخطأ: ' + e.message);
+        }
+    })();
+
+    // ==================== Supabase ====================
+    const SUPABASE_URL = "https://newffwrgwdatwtfawava.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_qHxOUJ-kDQ03Pov0uJw5qQ_Deuz43oH";
+    let supabase;
+    try {
+        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase تمت تهيئته');
+    } catch (e) {
+        alert('❌ فشل تهيئة Supabase: ' + e.message);
+    }
+
+    // ==================== المتغيرات العامة ====================
+    const SECRET_PASSWORD = "Goodnight113033meow2026tometo";
+    let currentUser = null;
+    let allUsers = [];
+
+    function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+    function extractYouTubeID(url) { const patterns = [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?#]+)/]; for (const p of patterns) { const m = url.match(p); if (m) return m[1]; } return null; }
+    function formatTime(timestamp) { if (!timestamp || !timestamp.toDate) return 'الآن'; const d = new Date(); const t = timestamp.toDate(); const diff = Math.floor((d - t) / 1000); if (diff < 60) return 'الآن'; if (diff < 3600) return Math.floor(diff / 60) + ' دقيقة'; if (diff < 86400) return Math.floor(diff / 3600) + ' ساعة'; return t.toLocaleDateString('ar-EG'); }
+
+    async function getUserData(username) {
+        if (!db || !firestoreReady) {
+            throw new Error('قاعدة البيانات غير جاهزة. انتظر قليلاً أو تأكد من تفعيل Firestore.');
+        }
+        try {
+            const docRef = db.collection('users').doc(username);
+            const doc = await docRef.get();
+            if (doc.exists) {
+                return { uid: doc.id, ...doc.data() };
+            } else {
+                const newUser = {
+                    username: username,
+                    avatar: '',
+                    bio: '',
+                    following: [],
+                    followers: [],
+                    saved: [],
+                    joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                await docRef.set(newUser);
+                return { uid: username, ...newUser };
+            }
+        } catch (error) {
+            console.error('خطأ في getUserData:', error);
+            throw error;
+        }
+    }
+
+    // ==================== دالة الدخول المُشخِّصة ====================
+    async function login() {
+        const username = document.getElementById('username-input').value.trim();
+        const password = document.getElementById('password-input').value;
+        const errorMsg = document.getElementById('error-msg');
+        
+        errorMsg.textContent = '';
+
+        if (!username) {
+            errorMsg.textContent = '⚠️ الرجاء إدخال اسم المستخدم';
+            return;
+        }
+        if (password !== SECRET_PASSWORD) {
+            errorMsg.textContent = '❌ كلمة المرور غير صحيحة';
+            return;
+        }
+
+        // التحقق من جاهزية Firestore قبل المتابعة
+        if (!db || !firestoreReady) {
+            errorMsg.textContent = '⏳ قاعدة البيانات غير جاهزة بعد. انتظر قليلاً وحاول مرة أخرى. إذا استمرت المشكلة، تأكد من تفعيل Firestore في وضع الاختبار.';
+            return;
+        }
+
+        try {
+            // عرض رسالة انتظار مؤقتة
+            errorMsg.textContent = '⏳ جاري تسجيل الدخول...';
+            
+            currentUser = await getUserData(username);
+            
+            sessionStorage.setItem('blog_auth', 'true');
+            sessionStorage.setItem('blog_user', username);
+            
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            
+            navigateTo('home');
+            loadInitialData();
+        } catch (error) {
+            console.error('فشل تسجيل الدخول:', error);
+            errorMsg.textContent = '❌ فشل تسجيل الدخول. الخطأ: ' + error.message;
+            // إظهار تفاصيل إضافية في تنبيه
+            alert('🚨 حدث خطأ أثناء تسجيل الدخول:\n\n' + error.message + '\n\nتأكد من أن Firestore مفعل في وضع الاختبار من Firebase Console.');
+        }
+    }
+
+    // استعادة الجلسة السابقة
+    (function restoreSession() {
+        if (sessionStorage.getItem('blog_auth') === 'true') {
+            const savedUser = sessionStorage.getItem('blog_user');
+            if (savedUser && db && firestoreReady) {
+                getUserData(savedUser).then(user => {
+                    currentUser = user;
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('app-container').style.display = 'block';
+                    navigateTo('home');
+                    loadInitialData();
+                }).catch(err => {
+                    console.error('فشل استعادة الجلسة:', err);
+                    sessionStorage.clear();
+                });
+            }
+        }
+    })();
+
+    async function loadInitialData() {
+        await loadAllUsers();
+        await loadHomePosts();
+        updateNotificationBadge();
+    }
+
+    async function loadAllUsers() {
+        if (!db) return;
+        try {
+            const snapshot = await db.collection('users').get();
+            allUsers = [];
+            snapshot.forEach(doc => allUsers.push({ uid: doc.id, ...doc.data() }));
+        } catch (e) {
+            console.error('فشل تحميل المستخدمين:', e);
+        }
+    }
+
+    function logout() {
+        sessionStorage.removeItem('blog_auth');
+        sessionStorage.removeItem('blog_user');
+        location.reload();
+    }
+</script>
 <script>
     // ==================== Firebase ====================
     const firebaseConfig = {
@@ -227,64 +405,7 @@
             errorMsg.textContent = '⚠️ الرجاء إدخال اسم المستخدم';
             return;
         }
-        if (password !== SECRET_PASSWORD) {
-            errorMsg.textContent = '❌ كلمة المرور غير صحيحة';
-            return;
-        }
 
-        try {
-            currentUser = await getUserData(username);
-            sessionStorage.setItem('blog_auth', 'true');
-            sessionStorage.setItem('blog_user', username);
-            
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
-            
-            navigateTo('home');
-            loadInitialData();
-        } catch (error) {
-            console.error('فشل تسجيل الدخول:', error);
-            errorMsg.textContent = '❌ فشل الاتصال بقاعدة البيانات. تأكد من تفعيل Firestore في وضع الاختبار.';
-        }
-    }
-
-    // استعادة الجلسة السابقة
-    (function restoreSession() {
-        if (sessionStorage.getItem('blog_auth') === 'true') {
-            const savedUser = sessionStorage.getItem('blog_user');
-            if (savedUser) {
-                getUserData(savedUser).then(user => {
-                    currentUser = user;
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('app-container').style.display = 'block';
-                    navigateTo('home');
-                    loadInitialData();
-                }).catch(err => {
-                    console.error('فشل استعادة الجلسة:', err);
-                    sessionStorage.clear();
-                });
-            }
-        }
-    })();
-
-    async function loadInitialData() {
-        await loadAllUsers();
-        await loadHomePosts();
-        updateNotificationBadge();
-    }
-
-    async function loadAllUsers() {
-        const snapshot = await db.collection('users').get();
-        allUsers = [];
-        snapshot.forEach(doc => allUsers.push({ uid: doc.id, ...doc.data() }));
-    }
-
-    function logout() {
-        sessionStorage.removeItem('blog_auth');
-        sessionStorage.removeItem('blog_user');
-        location.reload();
-    }
-</script>
 <script>
     function navigateTo(screen) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
