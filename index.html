@@ -4,43 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مدونتي</title>
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma; background: #f0f2f5; }
-        /* شاشة الدخول */
-        #login-screen {
+        /* شاشات متداخلة */
+        .screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1a1a2e, #2d6a4f);
-            display: flex; align-items: center; justify-content: center;
+            display: none; align-items: center; justify-content: center;
         }
-        .login-box {
+        .screen.active { display: flex; }
+        #gate-screen {
+            background: linear-gradient(135deg, #1a1a2e, #2d6a4f);
+        }
+        #auth-screen {
+            background: linear-gradient(135deg, #1a1a2e, #2d6a4f);
+        }
+        .box {
             background: white; padding: 40px; border-radius: 15px;
             text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             width: 90%; max-width: 400px;
         }
-        .login-box h2 { color: #1a1a2e; margin-bottom: 15px; }
-        .login-box input {
+        .box h2 { color: #1a1a2e; margin-bottom: 15px; }
+        .box input {
             width: 100%; padding: 12px; margin: 10px 0;
             border: 1px solid #ddd; border-radius: 25px;
             font-size: 16px; text-align: center;
         }
-        .login-box button {
+        .box button {
             width: 100%; padding: 12px; background: #2d6a4f;
             color: white; border: none; border-radius: 25px;
             font-size: 18px; cursor: pointer; margin-top: 10px;
         }
         .error { color: #e74c3c; margin-top: 10px; }
-
-        /* شاشة المدونة */
         #blog-screen { display: none; padding: 20px 20px 40px; }
         .header {
             background: #1a1a2e; color: white; padding: 25px;
             text-align: center; margin-bottom: 30px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .header h1 { font-size: 32px; }
+        .header h1 { font-size: 28px; }
+        .header .user-info { font-size: 14px; }
         .container { max-width: 800px; margin: 0 auto; }
         .admin-panel {
             background: white; padding: 20px; border-radius: 12px;
@@ -52,8 +57,8 @@
             font-family: inherit; font-size: 15px;
         }
         .btn {
-            padding: 10px 25px; border: none; border-radius: 20px;
-            cursor: pointer; font-size: 15px; font-weight: bold;
+            padding: 8px 20px; border: none; border-radius: 20px;
+            cursor: pointer; font-size: 14px; font-weight: bold; margin: 2px;
         }
         .btn-primary { background: #2d6a4f; color: white; }
         .btn-danger { background: #e74c3c; color: white; }
@@ -63,47 +68,59 @@
             margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .post h3 { color: #1a1a2e; margin-bottom: 8px; }
+        .post .author { font-size: 14px; color: #2d6a4f; margin-bottom: 5px; }
         .post .date { color: #888; font-size: 13px; margin-bottom: 12px; }
-        .post .content { line-height: 1.8; }
+        .post .content { line-height: 1.8; margin-bottom: 10px; }
         .post img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
-        .post-actions { margin-top: 15px; }
-        .post-actions button { margin-left: 5px; }
+        .post-actions { margin: 10px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .post-actions button { display: flex; align-items: center; gap: 4px; }
+        .comment-section { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        .comment { margin-bottom: 6px; font-size: 14px; }
+        .comment strong { color: #2d6a4f; }
+        .comment-input { display: flex; gap: 5px; margin-top: 10px; }
+        .comment-input input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; }
+        .comment-input button { background: #2d6a4f; color: white; border: none; border-radius: 20px; padding: 6px 15px; }
     </style>
 </head>
 <body>
 
-<!-- شاشة تسجيل الدخول -->
-<div id="login-screen">
-    <div class="login-box">
-        <h2>🔒 مدونتي</h2>
+<!-- البوابة الأولى -->
+<div id="gate-screen" class="screen active">
+    <div class="box">
+        <h2>🔒 مرحباً بك</h2>
         <p>أدخل كلمة المرور للمتابعة</p>
-        <input type="password" id="password-input" placeholder="كلمة المرور">
-        <button onclick="login()">دخول</button>
-        <div class="error" id="error-msg"></div>
+        <input type="password" id="gate-password" placeholder="كلمة المرور">
+        <button onclick="checkGatePassword()">دخول</button>
+        <div class="error" id="gate-error"></div>
     </div>
 </div>
 
-<!-- شاشة المدونة -->
+<!-- شاشة الدخول / التسجيل -->
+<div id="auth-screen" class="screen">
+    <div class="box">
+        <h2>👤 حسابك</h2>
+        <input type="text" id="username-input" placeholder="اسم المستخدم">
+        <input type="password" id="password-input" placeholder="كلمة المرور">
+        <button onclick="login()">دخول / تسجيل</button>
+        <div class="error" id="auth-error"></div>
+    </div>
+</div>
+
+<!-- المدونة -->
 <div id="blog-screen">
     <div class="header">
         <h1>✍️ مدونتي</h1>
+        <span class="user-info" id="current-user-display"></span>
     </div>
     <div class="container">
-        <!-- لوحة كتابة منشور جديد -->
         <div class="admin-panel" id="new-post-panel">
             <h3>📝 منشور جديد</h3>
             <input type="text" id="post-title" placeholder="عنوان المنشور">
             <textarea id="post-content" rows="4" placeholder="اكتب شيئاً..."></textarea>
             <input type="text" id="post-image-url" placeholder="رابط صورة (اختياري)">
-            <div style="margin-top:10px;">
-                <button class="btn btn-primary" onclick="addPost()">نشر</button>
-            </div>
+            <button class="btn btn-primary" onclick="addPost()">نشر</button>
         </div>
-
-        <!-- قائمة المنشورات -->
-        <div id="posts-container">
-            <p>⏳ جاري تحميل المنشورات...</p>
-        </div>
+        <div id="posts-container">⏳ جاري التحميل...</div>
     </div>
 </div>
 <script>
@@ -119,59 +136,144 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const SECRET_PASSWORD = "Goodnight113033meow2026tometo";
+    const SITE_PASSWORD = "Goodnight113033meow2026tometo";
     let currentUser = null;
 
-    // ==================== الدخول ====================
-    function login() {
-        const password = document.getElementById('password-input').value;
-        const errorMsg = document.getElementById('error-msg');
-        if (password === SECRET_PASSWORD) {
-            sessionStorage.setItem('blog_logged_in', 'true');
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('blog-screen').style.display = 'block';
-            loadPosts();
+    // ==================== البوابة الأولى ====================
+    function checkGatePassword() {
+        const input = document.getElementById('gate-password').value;
+        const errorMsg = document.getElementById('gate-error');
+        if (input === SITE_PASSWORD) {
+            sessionStorage.setItem('gate_passed', 'true');
+            document.getElementById('gate-screen').classList.remove('active');
+            document.getElementById('auth-screen').classList.add('active');
         } else {
             errorMsg.textContent = '❌ كلمة مرور غير صحيحة';
         }
     }
 
-    // استعادة الجلسة
-    if (sessionStorage.getItem('blog_logged_in') === 'true') {
-        document.getElementById('login-screen').style.display = 'none';
+    // ==================== المصادقة (حسابات المستخدمين) ====================
+    async function login() {
+        const username = document.getElementById('username-input').value.trim();
+        const password = document.getElementById('password-input').value;
+        const errorMsg = document.getElementById('auth-error');
+        errorMsg.textContent = '';
+
+        if (!username || !password) {
+            errorMsg.textContent = '⚠️ أدخل اسم المستخدم وكلمة المرور';
+            return;
+        }
+
+        try {
+            const userRef = db.collection('users').doc(username);
+            const doc = await userRef.get();
+
+            if (doc.exists) {
+                const userData = doc.data();
+                if (userData.password !== password) {
+                    errorMsg.textContent = '❌ كلمة المرور غير صحيحة';
+                    return;
+                }
+                currentUser = { username, uid: doc.id };
+            } else {
+                // إنشاء حساب جديد
+                await userRef.set({
+                    username,
+                    password,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                currentUser = { username, uid: username };
+            }
+
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showBlog();
+        } catch (e) {
+            errorMsg.textContent = '❌ حدث خطأ: ' + e.message;
+        }
+    }
+
+    function showBlog() {
+        document.getElementById('auth-screen').classList.remove('active');
         document.getElementById('blog-screen').style.display = 'block';
+        document.getElementById('current-user-display').textContent = '👤 ' + currentUser.username;
         loadPosts();
     }
 
+    // استعادة الجلسة (إذا تجاوز البوابة ولديه حساب)
+    const gatePassed = sessionStorage.getItem('gate_passed');
+    const savedUser = sessionStorage.getItem('currentUser');
+    if (gatePassed === 'true' && savedUser) {
+        currentUser = JSON.parse(savedUser);
+        showBlog();
+    } else if (gatePassed === 'true') {
+        // تجاوز البوابة ولكن لم يسجل دخول بعد
+        document.getElementById('gate-screen').classList.remove('active');
+        document.getElementById('auth-screen').classList.add('active');
+    } else if (savedUser) {
+        // لديه جلسة قديمة ولكن البوابة لم تتجاوز (نادر) - نعرض البوابة
+        document.getElementById('gate-screen').classList.add('active');
+    }
+
     function logout() {
-        sessionStorage.removeItem('blog_logged_in');
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('gate_passed');
         location.reload();
     }
 
-    // ==================== إدارة المنشورات ====================
+    function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ==================== المنشورات ====================
     async function addPost() {
         const title = document.getElementById('post-title').value.trim();
         const content = document.getElementById('post-content').value.trim();
         const imageUrl = document.getElementById('post-image-url').value.trim();
-        if (!title || !content) {
-            alert('الرجاء كتابة عنوان ومحتوى');
-            return;
+        if (!title || !content) { alert('⚠️ العنوان والمحتوى مطلوبان'); return; }
+
+        await db.collection('posts').add({
+            title, content, imageUrl,
+            author: currentUser.username,
+            likes: [],
+            comments: [],
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
+        document.getElementById('post-image-url').value = '';
+        loadPosts();
+    }
+
+    async function toggleLike(postId) {
+        const postRef = db.collection('posts').doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return;
+        const post = doc.data();
+        let likes = post.likes || [];
+        if (likes.includes(currentUser.username)) {
+            likes = likes.filter(u => u !== currentUser.username);
+        } else {
+            likes.push(currentUser.username);
         }
-        try {
-            await db.collection('posts').add({
-                title,
-                content,
-                imageUrl,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            // إعادة تعيين الحقول
-            document.getElementById('post-title').value = '';
-            document.getElementById('post-content').value = '';
-            document.getElementById('post-image-url').value = '';
-            loadPosts();
-        } catch (e) {
-            alert('فشل النشر: ' + e.message);
-        }
+        await postRef.update({ likes });
+        loadPosts();
+    }
+
+    async function addComment(postId) {
+        const input = document.getElementById(`comment-input-${postId}`);
+        const text = input.value.trim();
+        if (!text) return;
+        const postRef = db.collection('posts').doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return;
+        const post = doc.data();
+        const comments = post.comments || [];
+        comments.push({ username: currentUser.username, text, timestamp: new Date() });
+        await postRef.update({ comments });
+        loadPosts();
     }
 
     async function deletePost(postId) {
@@ -181,22 +283,18 @@
         }
     }
 
-    async function editPost(postId, currentTitle, currentContent, currentImage) {
-        const newTitle = prompt('العنوان الجديد:', currentTitle);
+    async function editPost(postId, oldTitle, oldContent, oldImage) {
+        const newTitle = prompt('العنوان:', oldTitle);
         if (newTitle === null) return;
-        const newContent = prompt('المحتوى الجديد:', currentContent);
+        const newContent = prompt('المحتوى:', oldContent);
         if (newContent === null) return;
-        const newImage = prompt('رابط الصورة (اتركه فارغاً إذا لم ترد تغييره):', currentImage);
-        try {
-            await db.collection('posts').doc(postId).update({
-                title: newTitle,
-                content: newContent,
-                imageUrl: newImage || ''
-            });
-            loadPosts();
-        } catch (e) {
-            alert('فشل التعديل: ' + e.message);
-        }
+        const newImage = prompt('رابط الصورة (اتركه فارغاً):', oldImage);
+        await db.collection('posts').doc(postId).update({
+            title: newTitle,
+            content: newContent,
+            imageUrl: newImage || ''
+        });
+        loadPosts();
     }
 
     // ==================== عرض المنشورات ====================
@@ -213,28 +311,46 @@
             snapshot.forEach(doc => {
                 const post = doc.data();
                 const date = post.timestamp ? post.timestamp.toDate().toLocaleString('ar-EG') : '';
+                const likes = post.likes || [];
+                const isLiked = likes.includes(currentUser.username);
+                const comments = post.comments || [];
+                const isOwner = post.author === currentUser.username;
+
+                let commentsHTML = '';
+                comments.forEach(c => {
+                    commentsHTML += `<div class="comment"><strong>${escapeHTML(c.username)}</strong>: ${escapeHTML(c.text)}</div>`;
+                });
+
                 html += `
                 <div class="post">
                     <h3>${escapeHTML(post.title)}</h3>
+                    <div class="author">✍️ ${escapeHTML(post.author)}</div>
                     <div class="date">📅 ${date}</div>
                     <div class="content">${escapeHTML(post.content).replace(/\n/g, '<br>')}</div>
                     ${post.imageUrl ? `<img src="${escapeHTML(post.imageUrl)}" alt="صورة">` : ''}
                     <div class="post-actions">
-                        <button class="btn btn-outline" onclick="editPost('${doc.id}', '${escapeHTML(post.title)}', '${escapeHTML(post.content)}', '${escapeHTML(post.imageUrl || '')}')">✏️ تعديل</button>
-                        <button class="btn btn-danger" onclick="deletePost('${doc.id}')">🗑️ حذف</button>
+                        <button class="btn ${isLiked ? 'btn-primary' : 'btn-outline'}" onclick="toggleLike('${doc.id}')">
+                            ❤️ ${likes.length}
+                        </button>
+                        <span>💬 ${comments.length}</span>
+                        ${isOwner ? `
+                            <button class="btn btn-outline" onclick="editPost('${doc.id}', '${escapeHTML(post.title)}', '${escapeHTML(post.content)}', '${escapeHTML(post.imageUrl || '')}')">✏️ تعديل</button>
+                            <button class="btn btn-danger" onclick="deletePost('${doc.id}')">🗑️ حذف</button>
+                        ` : ''}
+                    </div>
+                    <div class="comment-section">
+                        ${commentsHTML}
+                        <div class="comment-input">
+                            <input type="text" id="comment-input-${doc.id}" placeholder="أضف تعليقاً...">
+                            <button onclick="addComment('${doc.id}')">نشر</button>
+                        </div>
                     </div>
                 </div>`;
             });
             container.innerHTML = html;
         } catch (e) {
-            container.innerHTML = '<p>❌ فشل تحميل المنشورات. تأكد من تفعيل Firestore.</p>';
+            container.innerHTML = '<p>❌ فشل تحميل المنشورات.</p>';
         }
-    }
-
-    function escapeHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
     }
 </script>
 </body>
