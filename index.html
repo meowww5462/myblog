@@ -10,134 +10,79 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: #f5f5f0;
-            color: #1a1a1a;
-            transition: all 0.3s;
-        }
-        :root {
-            --black: #1a1a1a;
-            --green: #2d6a4f;
-            --pink: #d08c9e;
-            --light: #f5f5f0;
-            --white: #ffffff;
-            --shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
+        body { font-family: 'Cairo', sans-serif; background: #f5f5f0; color: #1a1a1a; }
+        :root { --black: #1a1a1a; --green: #2d6a4f; --pink: #d08c9e; --white: #ffffff; }
+        /* شاشة الدخول */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d6a4f 100%);
+            background: linear-gradient(135deg, #1a1a1a, #2d6a4f);
             display: flex; align-items: center; justify-content: center; z-index: 999;
         }
         .login-box {
-            background: rgba(255,255,255,0.95);
-            padding: 40px; border-radius: 20px; text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            background: rgba(255,255,255,0.95); padding: 40px; border-radius: 20px;
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             width: 90%; max-width: 400px;
         }
         .app-title {
-            font-family: 'El Messiri', serif;
-            font-size: 48px; font-weight: bold;
+            font-family: 'El Messiri', serif; font-size: 48px; font-weight: bold;
             background: linear-gradient(45deg, #d08c9e, #2d6a4f);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 20px;
         }
         .login-box input {
             width: 100%; padding: 12px; margin: 10px 0;
-            border: 1px solid #ddd; border-radius: 25px;
-            font-size: 16px; text-align: center; font-family: 'Cairo', sans-serif;
+            border: 1px solid #ddd; border-radius: 25px; font-size: 16px; text-align: center;
         }
         .login-box button {
-            width: 100%; padding: 12px; background: #2d6a4f;
-            color: white; border: none; border-radius: 25px;
-            font-size: 18px; cursor: pointer; margin-top: 15px;
-            font-family: 'Cairo', sans-serif; font-weight: 600;
+            width: 100%; padding: 12px; background: #2d6a4f; color: white;
+            border: none; border-radius: 25px; font-size: 18px; cursor: pointer; margin-top: 15px;
         }
-        .login-box button:hover { background: #1b4d3a; }
-        .error { color: #d08c9e; font-size: 14px; margin-top: 10px; }
+        .error { color: #d08c9e; margin-top: 10px; }
+        /* التطبيق */
         #app-container { display: none; }
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: white; border-top: 1px solid #eee;
-            display: flex; justify-content: space-around; padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100;
+            display: flex; justify-content: space-around; padding: 10px 0; z-index: 100;
         }
-        .bottom-nav button {
-            background: none; border: none; font-size: 22px;
-            color: #888; cursor: pointer; position: relative;
-        }
+        .bottom-nav button { background: none; border: none; font-size: 22px; color: #888; cursor: pointer; }
         .bottom-nav button.active { color: #2d6a4f; }
-        .badge {
-            position: absolute; top: -8px; right: -8px;
-            background: #d08c9e; color: white; border-radius: 50%;
-            padding: 2px 6px; font-size: 12px; min-width: 18px;
-        }
         .screen { display: none; padding: 20px 20px 70px; }
         .screen.active { display: block; }
-        .stories-container {
-            display: flex; gap: 15px; overflow-x: auto;
-            padding: 15px 0; margin-bottom: 20px;
-        }
-        .story { text-align: center; cursor: pointer; min-width: 70px; }
-        .story-avatar {
-            width: 60px; height: 60px; border-radius: 50%;
-            border: 3px solid #2d6a4f; padding: 2px; background: white;
-        }
-        .story-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .add-story {
-            background: #d08c9e; color: white; font-size: 30px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .post {
-            background: white; border-radius: 16px; padding: 15px;
-            margin-bottom: 20px; box-shadow: var(--shadow);
-        }
+        /* المنشورات */
+        .post { background: white; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .post-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #d08c9e; }
-        .post-author { font-weight: bold; color: #1a1a1a; text-decoration: none; }
+        .post-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #d08c9e; object-fit: cover; }
+        .post-author { font-weight: bold; }
         .post-time { color: #888; font-size: 12px; }
-        .post-content { margin: 10px 0; line-height: 1.6; }
-        .post-image { width: 100%; border-radius: 12px; margin: 10px 0; cursor: pointer; }
-        .post-video { width: 100%; border-radius: 12px; margin: 10px 0; }
-        .post-actions { display: flex; gap: 20px; margin: 10px 0; padding-top: 10px; border-top: 1px solid #eee; }
-        .post-actions button { background: none; border: none; cursor: pointer; font-size: 18px; color: #888; display: flex; align-items: center; gap: 5px; }
-        .post-actions button.liked { color: #d08c9e; }
+        .post-content { margin: 10px 0; }
+        .post-image, .post-video { width: 100%; border-radius: 12px; margin: 10px 0; }
+        .post-actions { display: flex; gap: 20px; margin-top: 10px; }
+        .post-actions button { background: none; border: none; font-size: 18px; cursor: pointer; }
         .comment-section { margin-top: 10px; }
         .comment { padding: 5px 0; font-size: 14px; border-bottom: 1px dotted #eee; }
-        .comment strong { color: #2d6a4f; }
         .comment-input { display: flex; gap: 5px; margin-top: 10px; }
-        .comment-input input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; font-family: 'Cairo', sans-serif; }
-        .comment-input button { background: #2d6a4f; color: white; border: none; border-radius: 20px; padding: 8px 15px; cursor: pointer; }
-        .profile-header { text-align: center; padding: 20px 0; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #d08c9e; margin-bottom: 10px; }
-        .profile-username { font-size: 22px; font-weight: bold; }
-        .profile-bio { color: #666; margin: 10px 0; }
-        .profile-stats { display: flex; justify-content: space-around; margin: 20px 0; }
-        .profile-stats div { text-align: center; }
-        .follow-btn { background: #2d6a4f; color: white; border: none; padding: 8px 25px; border-radius: 25px; cursor: pointer; font-family: 'Cairo', sans-serif; }
-        .follow-btn.following { background: #d08c9e; }
-        .search-bar { width: 100%; padding: 12px 20px; border: 1px solid #ddd; border-radius: 25px; margin-bottom: 20px; font-family: 'Cairo', sans-serif; }
-        .hashtag { color: #2d6a4f; font-weight: bold; cursor: pointer; }
-        .mention { color: #d08c9e; font-weight: bold; }
+        .comment-input input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 20px; }
+        .comment-input button { background: #2d6a4f; color: white; border: none; border-radius: 20px; padding: 8px 15px; }
+        .profile-header { text-align: center; padding: 20px; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #d08c9e; object-fit: cover; }
+        .follow-btn { background: #2d6a4f; color: white; border: none; padding: 8px 25px; border-radius: 25px; cursor: pointer; }
+        .search-bar { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 25px; margin-bottom: 20px; }
         .chat-list { list-style: none; }
-        .chat-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; cursor: pointer; box-shadow: var(--shadow); }
-        .chat-item img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .chat-item .last-msg { color: #888; font-size: 14px; }
-        .notification { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: var(--shadow); }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index: 1000; }
+        .chat-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; }
+        .notification { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h1 class="app-title">الورد</h1>
+        <div class="app-title">الورد</div>
         <input type="text" id="username-input" placeholder="اسم المستخدم">
         <input type="password" id="password-input" placeholder="كلمة المرور">
         <button onclick="login()">دخول</button>
-        <p class="error" id="error-msg"></p>
+        <div class="error" id="error-msg"></div>
     </div>
 </div>
 
@@ -150,191 +95,13 @@
     <div id="messages-screen" class="screen"></div>
 
     <div class="bottom-nav">
-        <button onclick="navigateTo('home')" class="active" id="nav-home">🏠</button>
+        <button onclick="navigateTo('home')" id="nav-home" class="active">🏠</button>
         <button onclick="navigateTo('explore')" id="nav-explore">🔍</button>
         <button onclick="openNewPost()" id="nav-post">➕</button>
-        <button onclick="navigateTo('notifications')" id="nav-notifications">❤️<span class="badge" id="notif-badge" style="display:none">0</span></button>
+        <button onclick="navigateTo('notifications')" id="nav-notifications">❤️</button>
         <button onclick="navigateTo('profile')" id="nav-profile">👤</button>
     </div>
 </div>
-    <script>
-    // ==================== Firebase ====================
-    const firebaseConfig = {
-        apiKey: "AIzaSyAAzIRj5YFlckjCd9LpS-Pm0UUCFkdxNng",
-        authDomain: "myblog-6590f.firebaseapp.com",
-        projectId: "myblog-6590f",
-        storageBucket: "myblog-6590f.firebasestorage.app",
-        messagingSenderId: "230767210257",
-        appId: "1:230767210257:web:1bc7b7514552d7177c66b0"
-    };
-    
-    let db; // سنخزن مرجع Firestore هنا
-    let firestoreReady = false;
-
-    // محاولة تهيئة Firebase و Firestore
-    try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        console.log('✅ Firebase تمت تهيئته');
-    } catch (e) {
-        alert('❌ فشل تهيئة Firebase: ' + e.message);
-    }
-
-    // اختبار اتصال Firestore بشكل صريح
-    (async function testFirestore() {
-        try {
-            if (!db) throw new Error('db غير معرف');
-            // كتابة وثيقة اختبار
-            await db.collection('_test_').doc('_conn_').set({ test: true, timestamp: new Date() });
-            console.log('✅ Firestore يعمل - الكتابة نجحت');
-            firestoreReady = true;
-            // محاولة قراءة للتأكد
-            const doc = await db.collection('_test_').doc('_conn_').get();
-            if (doc.exists) {
-                console.log('✅ Firestore يعمل - القراءة نجحت');
-            }
-        } catch (e) {
-            console.error('❌ فشل اختبار Firestore:', e);
-            firestoreReady = false;
-            alert('❌ فشل الاتصال بقاعدة بيانات Firestore.\nتأكد من أن Firestore مفعل في وضع الاختبار (Test mode).\nالخطأ: ' + e.message);
-        }
-    })();
-
-    // ==================== Supabase ====================
-    const SUPABASE_URL = "https://newffwrgwdatwtfawava.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_qHxOUJ-kDQ03Pov0uJw5qQ_Deuz43oH";
-    let supabase;
-    try {
-        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase تمت تهيئته');
-    } catch (e) {
-        alert('❌ فشل تهيئة Supabase: ' + e.message);
-    }
-
-    // ==================== المتغيرات العامة ====================
-    const SECRET_PASSWORD = "Goodnight113033meow2026tometo";
-    let currentUser = null;
-    let allUsers = [];
-
-    function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-    function extractYouTubeID(url) { const patterns = [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?#]+)/]; for (const p of patterns) { const m = url.match(p); if (m) return m[1]; } return null; }
-    function formatTime(timestamp) { if (!timestamp || !timestamp.toDate) return 'الآن'; const d = new Date(); const t = timestamp.toDate(); const diff = Math.floor((d - t) / 1000); if (diff < 60) return 'الآن'; if (diff < 3600) return Math.floor(diff / 60) + ' دقيقة'; if (diff < 86400) return Math.floor(diff / 3600) + ' ساعة'; return t.toLocaleDateString('ar-EG'); }
-
-    async function getUserData(username) {
-        if (!db || !firestoreReady) {
-            throw new Error('قاعدة البيانات غير جاهزة. انتظر قليلاً أو تأكد من تفعيل Firestore.');
-        }
-        try {
-            const docRef = db.collection('users').doc(username);
-            const doc = await docRef.get();
-            if (doc.exists) {
-                return { uid: doc.id, ...doc.data() };
-            } else {
-                const newUser = {
-                    username: username,
-                    avatar: '',
-                    bio: '',
-                    following: [],
-                    followers: [],
-                    saved: [],
-                    joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                await docRef.set(newUser);
-                return { uid: username, ...newUser };
-            }
-        } catch (error) {
-            console.error('خطأ في getUserData:', error);
-            throw error;
-        }
-    }
-
-    // ==================== دالة الدخول المُشخِّصة ====================
-    async function login() {
-        const username = document.getElementById('username-input').value.trim();
-        const password = document.getElementById('password-input').value;
-        const errorMsg = document.getElementById('error-msg');
-        
-        errorMsg.textContent = '';
-
-        if (!username) {
-            errorMsg.textContent = '⚠️ الرجاء إدخال اسم المستخدم';
-            return;
-        }
-        if (password !== SECRET_PASSWORD) {
-            errorMsg.textContent = '❌ كلمة المرور غير صحيحة';
-            return;
-        }
-
-        // التحقق من جاهزية Firestore قبل المتابعة
-        if (!db || !firestoreReady) {
-            errorMsg.textContent = '⏳ قاعدة البيانات غير جاهزة بعد. انتظر قليلاً وحاول مرة أخرى. إذا استمرت المشكلة، تأكد من تفعيل Firestore في وضع الاختبار.';
-            return;
-        }
-
-        try {
-            // عرض رسالة انتظار مؤقتة
-            errorMsg.textContent = '⏳ جاري تسجيل الدخول...';
-            
-            currentUser = await getUserData(username);
-            
-            sessionStorage.setItem('blog_auth', 'true');
-            sessionStorage.setItem('blog_user', username);
-            
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
-            
-            navigateTo('home');
-            loadInitialData();
-        } catch (error) {
-            console.error('فشل تسجيل الدخول:', error);
-            errorMsg.textContent = '❌ فشل تسجيل الدخول. الخطأ: ' + error.message;
-            // إظهار تفاصيل إضافية في تنبيه
-            alert('🚨 حدث خطأ أثناء تسجيل الدخول:\n\n' + error.message + '\n\nتأكد من أن Firestore مفعل في وضع الاختبار من Firebase Console.');
-        }
-    }
-
-    // استعادة الجلسة السابقة
-    (function restoreSession() {
-        if (sessionStorage.getItem('blog_auth') === 'true') {
-            const savedUser = sessionStorage.getItem('blog_user');
-            if (savedUser && db && firestoreReady) {
-                getUserData(savedUser).then(user => {
-                    currentUser = user;
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('app-container').style.display = 'block';
-                    navigateTo('home');
-                    loadInitialData();
-                }).catch(err => {
-                    console.error('فشل استعادة الجلسة:', err);
-                    sessionStorage.clear();
-                });
-            }
-        }
-    })();
-
-    async function loadInitialData() {
-        await loadAllUsers();
-        await loadHomePosts();
-        updateNotificationBadge();
-    }
-
-    async function loadAllUsers() {
-        if (!db) return;
-        try {
-            const snapshot = await db.collection('users').get();
-            allUsers = [];
-            snapshot.forEach(doc => allUsers.push({ uid: doc.id, ...doc.data() }));
-        } catch (e) {
-            console.error('فشل تحميل المستخدمين:', e);
-        }
-    }
-
-    function logout() {
-        sessionStorage.removeItem('blog_auth');
-        sessionStorage.removeItem('blog_user');
-        location.reload();
-    }
-</script>
 <script>
     // ==================== Firebase ====================
     const firebaseConfig = {
@@ -345,118 +112,107 @@
         messagingSenderId: "230767210257",
         appId: "1:230767210257:web:1bc7b7514552d7177c66b0"
     };
-    
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    
-    // اختبار اتصال Firestore بصمت
-    (async () => {
-        try {
-            await db.collection('_test_').doc('_conn_').set({ ok: true });
-            console.log('✅ Firestore متصل');
-        } catch (e) {
-            console.error('❌ Firestore غير متصل:', e.message);
-        }
-    })();
 
     // ==================== Supabase ====================
     const SUPABASE_URL = "https://newffwrgwdatwtfawava.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_qHxOUJ-kDQ03Pov0uJw5qQ_Deuz43oH";
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ==================== المتغيرات العامة ====================
+    // ==================== المتغيرات ====================
     const SECRET_PASSWORD = "Goodnight113033meow2026tometo";
     let currentUser = null;
     let allUsers = [];
 
+    // دوال مساعدة
     function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-    function extractYouTubeID(url) { const patterns = [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?#]+)/]; for (const p of patterns) { const m = url.match(p); if (m) return m[1]; } return null; }
-    function formatTime(timestamp) { if (!timestamp || !timestamp.toDate) return 'الآن'; const d = new Date(); const t = timestamp.toDate(); const diff = Math.floor((d - t) / 1000); if (diff < 60) return 'الآن'; if (diff < 3600) return Math.floor(diff / 60) + ' دقيقة'; if (diff < 86400) return Math.floor(diff / 3600) + ' ساعة'; return t.toLocaleDateString('ar-EG'); }
+    function formatTime(ts) { if (!ts || !ts.toDate) return 'الآن'; const d = new Date(); const t = ts.toDate(); const diff = Math.floor((d - t) / 1000); if (diff < 60) return 'الآن'; if (diff < 3600) return Math.floor(diff / 60) + ' د'; if (diff < 86400) return Math.floor(diff / 3600) + ' س'; return t.toLocaleDateString('ar-EG'); }
 
+    // إنشاء / جلب مستخدم
     async function getUserData(username) {
         const docRef = db.collection('users').doc(username);
         const doc = await docRef.get();
-        if (doc.exists) {
-            return { uid: doc.id, ...doc.data() };
-        } else {
-            const newUser = {
-                username: username,
-                avatar: '',
-                bio: '',
-                following: [],
-                followers: [],
-                saved: [],
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            await docRef.set(newUser);
-            return { uid: username, ...newUser };
-        }
+        if (doc.exists) return { uid: doc.id, ...doc.data() };
+        const newUser = {
+            username, avatar: '', bio: '', following: [], followers: [], saved: [],
+            joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        await docRef.set(newUser);
+        return { uid: username, ...newUser };
     }
 
-    // ==================== دالة الدخول المُصلحة ====================
+    // ✅ تسجيل الدخول
     async function login() {
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value;
         const errorMsg = document.getElementById('error-msg');
-        
         errorMsg.textContent = '';
+        if (!username) return errorMsg.textContent = '⚠️ أدخل اسم المستخدم';
+        if (password !== SECRET_PASSWORD) return errorMsg.textContent = '❌ كلمة مرور خاطئة';
 
-        if (!username) {
-            errorMsg.textContent = '⚠️ الرجاء إدخال اسم المستخدم';
-            return;
+        try {
+            currentUser = await getUserData(username);
+            sessionStorage.setItem('blog_auth', 'true');
+            sessionStorage.setItem('blog_user', username);
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            navigateTo('home');
+            loadInitialData();
+        } catch (e) {
+            errorMsg.textContent = '❌ فشل الاتصال بقاعدة البيانات. تأكد من تفعيل Firestore بوضع الاختبار.';
         }
+    }
 
+    // استعادة الجلسة
+    (function restore() {
+        if (sessionStorage.getItem('blog_auth') === 'true') {
+            const saved = sessionStorage.getItem('blog_user');
+            if (saved) getUserData(saved).then(u => {
+                currentUser = u;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'block';
+                navigateTo('home');
+                loadInitialData();
+            }).catch(() => sessionStorage.clear());
+        }
+    })();
+
+    async function loadInitialData() {
+        await loadAllUsers();
+        await loadHomePosts();
+    }
+
+    async function loadAllUsers() {
+        const snap = await db.collection('users').get();
+        allUsers = [];
+        snap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
+    }
+
+    function logout() { sessionStorage.clear(); location.reload(); }
+</script>
 <script>
     function navigateTo(screen) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-        switch(screen) {
-            case 'home':
-                document.getElementById('home-screen').classList.add('active');
-                document.getElementById('nav-home').classList.add('active');
-                loadHomePosts();
-                break;
-            case 'explore':
-                document.getElementById('explore-screen').classList.add('active');
-                document.getElementById('nav-explore').classList.add('active');
-                loadExplore();
-                break;
-            case 'notifications':
-                document.getElementById('notifications-screen').classList.add('active');
-                document.getElementById('nav-notifications').classList.add('active');
-                loadNotifications();
-                break;
-            case 'profile':
-                document.getElementById('profile-screen').classList.add('active');
-                document.getElementById('nav-profile').classList.add('active');
-                loadProfile(currentUser.username);
-                break;
-            case 'messages':
-                document.getElementById('messages-screen').classList.add('active');
-                loadMessages();
-                break;
-        }
-        updateNotificationBadge();
+        const screens = { home: 'home-screen', explore: 'explore-screen', notifications: 'notifications-screen', profile: 'profile-screen', messages: 'messages-screen' };
+        const navs = { home: 'nav-home', explore: 'nav-explore', notifications: 'nav-notifications', profile: 'nav-profile' };
+        if (screens[screen]) document.getElementById(screens[screen]).classList.add('active');
+        if (navs[screen]) document.getElementById(navs[screen]).classList.add('active');
+        if (screen === 'home') loadHomePosts();
+        else if (screen === 'explore') loadExplore();
+        else if (screen === 'notifications') loadNotifications();
+        else if (screen === 'profile') loadProfile(currentUser.username);
+        else if (screen === 'messages') loadMessages();
     }
 
     async function loadHomePosts() {
         const container = document.getElementById('home-screen');
-        container.innerHTML = '<div style="text-align:center;padding:40px;">⏳ جاري التحميل...</div>';
-        const storiesSnapshot = await db.collection('stories').where('expiresAt', '>', new Date()).orderBy('expiresAt', 'desc').get();
-        let storiesHTML = '<div class="stories-container">';
-        storiesHTML += `<div class="story" onclick="addStory()"><div class="story-avatar add-story">+</div><small>أضف قصتك</small></div>`;
-        storiesSnapshot.forEach(doc => {
-            const s = doc.data();
-            storiesHTML += `<div class="story" onclick="viewStory('${doc.id}')"><div class="story-avatar"><img src="${s.mediaUrl}" onerror="this.src='data:image/svg+xml,...'"></div><small>${s.username}</small></div>`;
-        });
-        storiesHTML += '</div>';
-
-        const following = currentUser.following || [];
-        following.push(currentUser.username);
-        const postsSnapshot = await db.collection('posts').where('author', 'in', following).orderBy('timestamp', 'desc').limit(20).get();
-        let postsHTML = '';
-        postsSnapshot.forEach(doc => postsHTML += renderPost({id: doc.id, ...doc.data()}));
-        container.innerHTML = storiesHTML + (postsHTML || '<p style="text-align:center;padding:20px;">لا توجد منشورات بعد.</p>');
+        container.innerHTML = '<div style="text-align:center;padding:40px;">⏳ تحميل...</div>';
+        const postsSnap = await db.collection('posts').orderBy('timestamp', 'desc').limit(20).get();
+        let html = '';
+        postsSnap.forEach(doc => html += renderPost({ id: doc.id, ...doc.data() }));
+        container.innerHTML = html || '<p style="text-align:center;">لا توجد منشورات.</p>';
     }
 
     function renderPost(post) {
@@ -464,61 +220,41 @@
         const likeCount = post.likes ? post.likes.length : 0;
         const commentCount = post.comments ? post.comments.length : 0;
         let mediaHTML = '';
-        if (post.imageUrl) mediaHTML += `<img src="${post.imageUrl}" class="post-image" onclick="viewMedia('${post.imageUrl}')">`;
-        if (post.videoUrl) mediaHTML += `<video class="post-video" controls><source src="${post.videoUrl}" type="video/mp4"></video>`;
-        if (post.youtubeId) mediaHTML += `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${post.youtubeId}" allowfullscreen></iframe></div>`;
-
+        if (post.imageUrl) mediaHTML += `<img src="${post.imageUrl}" class="post-image">`;
+        if (post.videoUrl) mediaHTML += `<video class="post-video" controls><source src="${post.videoUrl}"></video>`;
         return `
-        <div class="post" id="post-${post.id}">
+        <div class="post">
             <div class="post-header">
-                <a href="#" onclick="navigateToProfile('${post.author}')"><img src="${post.authorAvatar || 'data:image/svg+xml,...'}" class="post-avatar"></a>
+                <img src="${post.authorAvatar || 'data:image/svg+xml,...'}" class="post-avatar">
                 <div>
-                    <a href="#" onclick="navigateToProfile('${post.author}')" class="post-author">${post.author}</a>
+                    <span class="post-author">${post.author}</span>
                     <div class="post-time">${formatTime(post.timestamp)}</div>
                 </div>
-                ${post.author === currentUser.username ? `
-                <div style="margin-right:auto;display:flex;gap:5px;">
-                    <button onclick="editPost('${post.id}')" style="background:none;border:none;">✏️</button>
-                    <button onclick="deletePostConfirm('${post.id}')" style="background:none;border:none;">🗑️</button>
-                </div>` : ''}
+                ${post.author === currentUser.username ? `<button onclick="editPost('${post.id}')">✏️</button><button onclick="deletePostConfirm('${post.id}')">🗑️</button>` : ''}
             </div>
-            <div class="post-content">${formatContent(post.content)}</div>
+            <div class="post-content">${escapeHTML(post.content).replace(/\n/g,'<br>')}</div>
             ${mediaHTML}
             <div class="post-actions">
-                <button class="${isLiked ? 'liked' : ''}" onclick="toggleLike('${post.id}')">❤️ <span>${likeCount}</span></button>
+                <button class="${isLiked?'liked':''}" onclick="toggleLike('${post.id}')">❤️ ${likeCount}</button>
                 <button onclick="focusComment('${post.id}')">💬 ${commentCount}</button>
-                <button onclick="sharePost('${post.id}')">🔄</button>
-                <button onclick="savePost('${post.id}')">🔖</button>
             </div>
             <div class="comment-section">
                 ${post.comments ? post.comments.slice(0,3).map(c => `<div class="comment"><strong>${c.username}</strong> ${c.text}</div>`).join('') : ''}
                 <div class="comment-input">
-                    <input type="text" id="comment-input-${post.id}" placeholder="أضف تعليقاً...">
+                    <input type="text" id="comment-input-${post.id}" placeholder="تعليق...">
                     <button onclick="addComment('${post.id}')">نشر</button>
                 </div>
             </div>
         </div>`;
     }
 
-    function formatContent(text) {
-        return escapeHTML(text).replace(/#(\w+)/g, '<span class="hashtag" onclick="searchHashtag(\'$1\')">#$1</span>').replace(/@(\w+)/g, '<span class="mention" onclick="navigateToProfile(\'$1\')">@$1</span>').replace(/\n/g, '<br>');
-    }
-
     async function toggleLike(postId) {
-        const postRef = db.collection('posts').doc(postId);
-        const post = (await postRef.get()).data();
+        const ref = db.collection('posts').doc(postId);
+        const post = (await ref.get()).data();
         let likes = post.likes || [];
         if (likes.includes(currentUser.username)) likes = likes.filter(u => u !== currentUser.username);
-        else {
-            likes.push(currentUser.username);
-            if (post.author !== currentUser.username) {
-                await db.collection('notifications').add({
-                    recipient: post.author, sender: currentUser.username, type: 'like', postId: postId,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(), read: false
-                });
-            }
-        }
-        await postRef.update({ likes });
+        else { likes.push(currentUser.username); if (post.author !== currentUser.username) addNotification(post.author, 'like', postId); }
+        await ref.update({ likes });
         loadHomePosts();
     }
 
@@ -526,17 +262,10 @@
         const input = document.getElementById(`comment-input-${postId}`);
         const text = input.value.trim();
         if (!text) return;
-        const postRef = db.collection('posts').doc(postId);
-        await postRef.update({
-            comments: firebase.firestore.FieldValue.arrayUnion({ username: currentUser.username, text: text, timestamp: new Date() })
-        });
-        const post = (await postRef.get()).data();
-        if (post.author !== currentUser.username) {
-            await db.collection('notifications').add({
-                recipient: post.author, sender: currentUser.username, type: 'comment', postId: postId, text: text,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(), read: false
-            });
-        }
+        const ref = db.collection('posts').doc(postId);
+        await ref.update({ comments: firebase.firestore.FieldValue.arrayUnion({ username: currentUser.username, text, timestamp: new Date() }) });
+        const post = (await ref.get()).data();
+        if (post.author !== currentUser.username) addNotification(post.author, 'comment', postId, text);
         input.value = '';
         loadHomePosts();
     }
@@ -544,333 +273,136 @@
     function focusComment(postId) { document.getElementById(`comment-input-${postId}`).focus(); }
 
     async function deletePostConfirm(postId) {
-        if (confirm('متأكد من حذف المنشور؟')) {
-            await db.collection('posts').doc(postId).delete();
-            loadHomePosts();
-        }
+        if (confirm('متأكد؟')) { await db.collection('posts').doc(postId).delete(); loadHomePosts(); }
     }
 
     async function editPost(postId) {
         const doc = await db.collection('posts').doc(postId).get();
         const post = doc.data();
-        if (post.author !== currentUser.username) { alert('لا يمكنك تعديل منشور غيرك'); return; }
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('post-screen').classList.add('active');
-        document.getElementById('post-screen').innerHTML = `
-            <h2>✏️ تعديل المنشور</h2>
-            <textarea id="edit-content" style="width:100%;min-height:100px;padding:10px;">${post.content}</textarea>
-            <button onclick="updatePost('${postId}')" style="padding:12px;background:#2d6a4f;color:white;border:none;width:100%;">حفظ التعديل</button>
-            <button onclick="navigateTo('home')" style="margin-top:10px;background:none;border:none;width:100%;">إلغاء</button>
-        `;
+        if (post.author !== currentUser.username) return alert('لا يمكنك تعديل منشور غيرك');
+        const newContent = prompt('تعديل المنشور:', post.content);
+        if (newContent) { await db.collection('posts').doc(postId).update({ content: newContent }); loadHomePosts(); }
     }
 
-    async function updatePost(postId) {
-        const newContent = document.getElementById('edit-content').value;
-        await db.collection('posts').doc(postId).update({ content: newContent });
-        navigateTo('home');
+    function addNotification(recipient, type, postId, text = '') {
+        db.collection('notifications').add({
+            recipient, sender: currentUser.username, type, postId, text,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(), read: false
+        });
     }
 </script>
 <script>
-    function openNewPost() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('post-screen').classList.add('active');
-        document.getElementById('post-screen').innerHTML = `
-            <h2>📝 إنشاء منشور جديد</h2>
-            <input type="file" id="media-file" accept="image/*,video/*" style="margin:10px 0;">
-            <img id="preview-image" style="max-width:100%;max-height:200px;display:none;">
-            <video id="preview-video" controls style="max-width:100%;max-height:200px;display:none;"></video>
-            <textarea id="post-content-input" placeholder="ما الذي يدور في ذهنك؟" style="width:100%;min-height:100px;padding:10px;margin:10px 0;border:1px solid #ddd;border-radius:10px;font-family:'Cairo';"></textarea>
-            <button onclick="publishPost()" style="padding:12px 30px;background:#2d6a4f;color:white;border:none;border-radius:25px;width:100%;">نشر</button>
-            <button onclick="navigateTo('home')" style="margin-top:10px;background:none;border:none;color:#888;width:100%;">إلغاء</button>
-        `;
-        document.getElementById('media-file').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                if (file.type.startsWith('image/')) {
-                    document.getElementById('preview-image').src = ev.target.result;
-                    document.getElementById('preview-image').style.display = 'block';
-                    document.getElementById('preview-video').style.display = 'none';
-                } else {
-                    document.getElementById('preview-video').src = ev.target.result;
-                    document.getElementById('preview-video').style.display = 'block';
-                    document.getElementById('preview-image').style.display = 'none';
-                }
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    async function publishPost() {
-        const content = document.getElementById('post-content-input').value.trim();
-        const fileInput = document.getElementById('media-file');
-        const file = fileInput.files[0];
-        if (!content && !file) { alert('⚠️ أضف محتوى أو صورة/فيديو'); return; }
-
-        let imageUrl = '', videoUrl = '';
-        if (file) {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${currentUser.username}_${Date.now()}.${fileExt}`;
-            const { data, error } = await supabase.storage.from('media').upload(fileName, file);
-            if (error) { alert('❌ فشل رفع الملف: ' + error.message); return; }
-            const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
-            if (file.type.startsWith('image/')) imageUrl = urlData.publicUrl;
-            else videoUrl = urlData.publicUrl;
-        }
-
-        await db.collection('posts').add({
-            author: currentUser.username,
-            authorAvatar: currentUser.avatar || '',
-            content: content,
-            imageUrl: imageUrl,
-            videoUrl: videoUrl,
-            likes: [],
-            comments: [],
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        await db.collection('users').doc(currentUser.username).update({
-            postCount: firebase.firestore.FieldValue.increment(1)
-        });
-        navigateTo('home');
-    }
-
-    async function addStory() {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*,video/*';
-        fileInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const fileName = `${currentUser.username}_story_${Date.now()}.${file.name.split('.').pop()}`;
-            const { error } = await supabase.storage.from('media').upload(fileName, file);
-            if (error) { alert('فشل رفع القصة'); return; }
-            const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
-            await db.collection('stories').add({
-                username: currentUser.username,
-                mediaUrl: urlData.publicUrl,
-                type: file.type.startsWith('image/') ? 'image' : 'video',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-            });
-            loadHomePosts();
-        };
-        fileInput.click();
-    }
-
-    function viewStory(storyId) {
-        db.collection('stories').doc(storyId).get().then(doc => {
-            const story = doc.data();
-            const div = document.createElement('div');
-            div.className = 'overlay';
-            if (story.type === 'image') {
-                div.innerHTML = `<img src="${story.mediaUrl}" style="max-width:90%;max-height:90%;"><button onclick="this.parentElement.remove()" style="position:absolute;top:20px;right:20px;font-size:30px;color:white;">✕</button>`;
-            } else {
-                div.innerHTML = `<video src="${story.mediaUrl}" autoplay style="max-width:90%;max-height:90%;" onended="this.parentElement.remove()"></video><button onclick="this.parentElement.remove()" style="position:absolute;top:20px;right:20px;font-size:30px;color:white;">✕</button>`;
-            }
-            document.body.appendChild(div);
-        });
-    }
-
-    async function navigateToProfile(username) { navigateTo('profile'); loadProfile(username); }
-
+    // ---------- الملف الشخصي ----------
     async function loadProfile(username) {
-        const container = document.getElementById('profile-screen');
         const user = allUsers.find(u => u.uid === username) || await getUserData(username);
-        const isOwnProfile = currentUser.username === username;
+        const container = document.getElementById('profile-screen');
+        const isOwn = currentUser.username === username;
         const isFollowing = currentUser.following && currentUser.following.includes(username);
         container.innerHTML = `
             <div class="profile-header">
-                <img src="${user.avatar || 'data:image/svg+xml,...'}" class="profile-avatar" onerror="this.src='data:image/svg+xml,...'">
-                <div class="profile-username">${user.username}</div>
-                <div class="profile-bio">${user.bio || ''}</div>
-                <div class="profile-stats">
-                    <div>📝 ${user.postCount || 0} منشور</div>
-                    <div>👥 ${user.followers ? user.followers.length : 0} متابع</div>
-                    <div>👤 ${user.following ? user.following.length : 0} يتابع</div>
-                </div>
-                ${isOwnProfile ? `
-                    <button onclick="editProfile()" class="follow-btn">تعديل الملف</button>
-                    <button onclick="logout()" class="follow-btn" style="background:#888;margin-top:10px;">تسجيل الخروج</button>
-                ` : `
-                    <button onclick="toggleFollow('${username}')" class="follow-btn ${isFollowing ? 'following' : ''}">
-                        ${isFollowing ? 'إلغاء المتابعة' : 'متابعة'}
-                    </button>
-                `}
+                <img src="${user.avatar || 'data:image/svg+xml,...'}" class="profile-avatar">
+                <h2>${user.username}</h2>
+                <p>${user.bio || ''}</p>
+                <div>📝 ${user.postCount || 0} | 👥 ${user.followers?.length || 0} متابع | 👤 ${user.following?.length || 0} يتابع</div>
+                ${isOwn ? `<button onclick="editProfile()">تعديل</button> <button onclick="logout()">خروج</button>`
+                : `<button class="follow-btn" onclick="toggleFollow('${username}')">${isFollowing ? 'إلغاء المتابعة' : 'متابعة'}</button>`}
             </div>
             <h3>المنشورات</h3>
-            <div id="user-posts"></div>
-        `;
-        const postsSnapshot = await db.collection('posts').where('author', '==', username).orderBy('timestamp', 'desc').get();
+            <div id="user-posts"></div>`;
+        const snap = await db.collection('posts').where('author', '==', username).orderBy('timestamp', 'desc').get();
         let postsHTML = '';
-        postsSnapshot.forEach(doc => postsHTML += renderPost({id: doc.id, ...doc.data()}));
-        document.getElementById('user-posts').innerHTML = postsHTML || '<p>لا توجد منشورات.</p>';
+        snap.forEach(doc => postsHTML += renderPost({ id: doc.id, ...doc.data() }));
+        document.getElementById('user-posts').innerHTML = postsHTML || '<p>لا منشورات.</p>';
     }
 
     async function toggleFollow(username) {
         if (!currentUser.following) currentUser.following = [];
-        const index = currentUser.following.indexOf(username);
-        if (index > -1) {
-            currentUser.following.splice(index, 1);
-        } else {
-            currentUser.following.push(username);
-            await db.collection('notifications').add({
-                recipient: username, sender: currentUser.username, type: 'follow',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(), read: false
-            });
-        }
+        const idx = currentUser.following.indexOf(username);
+        if (idx > -1) currentUser.following.splice(idx, 1);
+        else { currentUser.following.push(username); addNotification(username, 'follow', null); }
         await db.collection('users').doc(currentUser.username).update({ following: currentUser.following });
         const otherRef = db.collection('users').doc(username);
         const otherDoc = await otherRef.get();
         let followers = otherDoc.data().followers || [];
-        if (index > -1) followers = followers.filter(u => u !== currentUser.username);
+        if (idx > -1) followers = followers.filter(u => u !== currentUser.username);
         else followers.push(currentUser.username);
         await otherRef.update({ followers });
         loadProfile(username);
     }
 
     async function editProfile() {
-        const newBio = prompt('أدخل نبذة عنك:', currentUser.bio);
-        if (newBio !== null) {
-            await db.collection('users').doc(currentUser.username).update({ bio: newBio });
-            currentUser.bio = newBio;
-        }
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const fileName = `avatar_${currentUser.username}.${file.name.split('.').pop()}`;
-            const { error } = await supabase.storage.from('media').upload(fileName, file, { upsert: true });
-            if (error) { alert('فشل رفع الصورة'); return; }
-            const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
-            await db.collection('users').doc(currentUser.username).update({ avatar: urlData.publicUrl });
-            currentUser.avatar = urlData.publicUrl;
+        const bio = prompt('نبذة:', currentUser.bio);
+        if (bio !== null) { await db.collection('users').doc(currentUser.username).update({ bio }); currentUser.bio = bio; }
+        const file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*';
+        file.onchange = async e => {
+            const f = e.target.files[0]; if (!f) return;
+            const name = `avatar_${currentUser.username}`;
+            const { error } = await supabase.storage.from('media').upload(name, f, { upsert: true });
+            if (error) return alert('فشل الرفع');
+            const { data } = supabase.storage.from('media').getPublicUrl(name);
+            await db.collection('users').doc(currentUser.username).update({ avatar: data.publicUrl });
+            currentUser.avatar = data.publicUrl;
             loadProfile(currentUser.username);
         };
-        fileInput.click();
-    }
-</script>
-<script>
-    async function loadNotifications() {
-        const container = document.getElementById('notifications-screen');
-        const snapshot = await db.collection('notifications').where('recipient', '==', currentUser.username).orderBy('timestamp', 'desc').limit(30).get();
-        let html = '';
-        snapshot.forEach(doc => {
-            const n = doc.data();
-            html += `<div class="notification"><strong>${n.sender}</strong> ${n.type === 'like' ? 'أعجب بمنشورك' : n.type === 'comment' ? 'علّق: ' + (n.text||'') : 'بدأ بمتابعتك'}<br><small>${formatTime(n.timestamp)}</small></div>`;
-        });
-        container.innerHTML = html || '<p style="text-align:center;padding:20px;">لا توجد إشعارات</p>';
-        document.getElementById('notif-badge').style.display = 'none';
+        file.click();
     }
 
-    async function updateNotificationBadge() {
-        const snapshot = await db.collection('notifications').where('recipient', '==', currentUser.username).where('read', '==', false).get();
-        const badge = document.getElementById('notif-badge');
-        const count = snapshot.size;
-        if (count > 0) { badge.textContent = count; badge.style.display = 'inline'; } else badge.style.display = 'none';
-    }
-
-    async function loadMessages() {
-        const container = document.getElementById('messages-screen');
-        const snapshot = await db.collection('chats').where('participants', 'array-contains', currentUser.username).get();
-        let html = '<ul class="chat-list">';
-        snapshot.forEach(doc => {
-            const chat = doc.data();
-            const other = chat.participants.find(p => p !== currentUser.username);
-            html += `<li class="chat-item" onclick="openChat('${doc.id}')"><img src="${chat.avatar || ''}" onerror="this.src='data:image/svg+xml,...'"><div><strong>${other}</strong><br><span class="last-msg">${chat.lastMessage || ''}</span></div></li>`;
-        });
-        html += '</ul><button onclick="startNewChat()" style="width:100%;padding:10px;background:#2d6a4f;color:white;border:none;border-radius:20px;">محادثة جديدة</button>';
-        container.innerHTML = html;
-    }
-
-    function startNewChat() {
-        const username = prompt('أدخل اسم المستخدم:');
-        if (username && username !== currentUser.username) {
-            db.collection('chats').where('participants', 'array-contains', currentUser.username).get().then(snapshot => {
-                let existing = null;
-                snapshot.forEach(doc => { if (doc.data().participants.includes(username)) existing = doc.id; });
-                if (existing) openChat(existing);
-                else {
-                    db.collection('chats').add({
-                        participants: [currentUser.username, username],
-                        lastMessage: '',
-                        lastTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    }).then(ref => openChat(ref.id));
-                }
-            });
-        }
-    }
-
-    function openChat(chatId) {
+    // ---------- إنشاء منشور ----------
+    function openNewPost() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('messages-screen').classList.add('active');
-        db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp').get().then(snapshot => {
-            let html = '<div style="height:70vh;overflow-y:auto;">';
-            snapshot.forEach(doc => {
-                const msg = doc.data();
-                html += `<div style="margin:5px 0;${msg.sender === currentUser.username ? 'text-align:left' : ''}"><strong>${msg.sender}:</strong> ${msg.text}</div>`;
-            });
-            html += '</div><input id="msg-input" style="width:100%;padding:10px;"><button onclick="sendMessage(\'' + chatId + '\')">إرسال</button>';
-            document.getElementById('messages-screen').innerHTML = html;
-        });
+        document.getElementById('post-screen').classList.add('active');
+        document.getElementById('post-screen').innerHTML = `
+            <h2>📝 منشور جديد</h2>
+            <input type="file" id="media-file" accept="image/*,video/*">
+            <textarea id="post-content-input" placeholder="ماذا تريد أن تشارك؟" style="width:100%;min-height:100px;padding:10px;margin:10px 0;"></textarea>
+            <button onclick="publishPost()" style="width:100%;padding:12px;background:#2d6a4f;color:white;border:none;border-radius:25px;">نشر</button>
+            <button onclick="navigateTo('home')" style="width:100%;margin-top:10px;">إلغاء</button>
+        `;
     }
 
-    async function sendMessage(chatId) {
-        const input = document.getElementById('msg-input');
-        const text = input.value.trim();
-        if (!text) return;
-        await db.collection('chats').doc(chatId).collection('messages').add({
-            sender: currentUser.username, text: text,
+    async function publishPost() {
+        const content = document.getElementById('post-content-input').value.trim();
+        const file = document.getElementById('media-file').files[0];
+        if (!content && !file) return alert('أضف محتوى أو ملف');
+        let imageUrl = '', videoUrl = '';
+        if (file) {
+            const ext = file.name.split('.').pop();
+            const name = `${currentUser.username}_${Date.now()}.${ext}`;
+            const { error } = await supabase.storage.from('media').upload(name, file);
+            if (error) return alert('فشل رفع الملف');
+            const { data } = supabase.storage.from('media').getPublicUrl(name);
+            file.type.startsWith('image/') ? imageUrl = data.publicUrl : videoUrl = data.publicUrl;
+        }
+        await db.collection('posts').add({
+            author: currentUser.username, authorAvatar: currentUser.avatar || '', content,
+            imageUrl, videoUrl, likes: [], comments: [],
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        await db.collection('chats').doc(chatId).update({
-            lastMessage: text, lastTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+        await db.collection('users').doc(currentUser.username).update({ postCount: firebase.firestore.FieldValue.increment(1) });
+        navigateTo('home');
+    }
+
+    // ---------- الإشعارات ----------
+    async function loadNotifications() {
+        const snap = await db.collection('notifications').where('recipient', '==', currentUser.username).orderBy('timestamp', 'desc').limit(20).get();
+        let html = '';
+        snap.forEach(doc => {
+            const n = doc.data();
+            html += `<div class="notification"><strong>${n.sender}</strong> ${n.type==='like'?'أعجب بمنشورك':n.type==='comment'?'علّق: '+n.text:'تابعك'}</div>`;
         });
-        input.value = '';
-        openChat(chatId);
+        document.getElementById('notifications-screen').innerHTML = html || '<p>لا إشعارات.</p>';
     }
 
-    async function loadExplore() {
-        const container = document.getElementById('explore-screen');
-        container.innerHTML = `<input type="text" class="search-bar" placeholder="🔍 بحث عن مستخدمين أو هاشتاغ..." onkeyup="searchExplore(this.value)"><div id="search-results"></div>`;
+    // ---------- الرسائل ----------
+    function loadMessages() {
+        document.getElementById('messages-screen').innerHTML = '<p>الرسائل غير مفعلة حالياً.</p>';
     }
 
-    async function searchExplore(query) {
-        if (!query) { document.getElementById('search-results').innerHTML = ''; return; }
-        const usersSnap = await db.collection('users').where('username', '>=', query).where('username', '<=', query + '\uf8ff').limit(10).get();
-        let html = '<h3>المستخدمون</h3>';
-        usersSnap.forEach(doc => {
-            const u = doc.data();
-            html += `<div class="chat-item" onclick="navigateToProfile('${u.username}')"><img src="${u.avatar || ''}" onerror="this.src='data:image/svg+xml,...'"><div>${u.username}</div></div>`;
-        });
-        document.getElementById('search-results').innerHTML = html;
-    }
-
-    function sharePost(postId) {
-        const url = window.location.href.split('?')[0] + '?post=' + postId;
-        if (navigator.share) navigator.share({ url: url });
-        else prompt('انسخ الرابط:', url);
-    }
-
-    async function savePost(postId) {
-        if (!currentUser.saved) currentUser.saved = [];
-        if (currentUser.saved.includes(postId)) {
-            currentUser.saved = currentUser.saved.filter(id => id !== postId);
-            alert('تمت إزالة المنشور من المحفوظات');
-        } else {
-            currentUser.saved.push(postId);
-            alert('تم حفظ المنشور');
-        }
-        await db.collection('users').doc(currentUser.username).update({ saved: currentUser.saved });
-    }
-
-    function viewMedia(url) {
-        const div = document.createElement('div');
-        div.className = 'overlay';
-        div.innerHTML = `<img src="${url}" style="max-width:90%;max-height:90%;"><button onclick="this.parentElement.remove()" style="position:absolute;top:20px;right:20px;font-size:30px;color:white;">✕</button>`;
-        document.body.appendChild(div);
+    // ---------- الاستكشاف ----------
+    function loadExplore() {
+        document.getElementById('explore-screen').innerHTML = `
+            <input class="search-bar" placeholder="🔍 بحث...">
+            <div id="search-results"></div>`;
     }
 </script>
 </body>
