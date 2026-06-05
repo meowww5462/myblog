@@ -24,7 +24,6 @@
             --white: #ffffff;
             --shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
-        /* شاشة الدخول */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #1a1a1a 0%, #2d6a4f 100%);
@@ -58,8 +57,6 @@
         }
         .login-box button:hover { background: #1b4d3a; }
         .error { color: #d08c9e; font-size: 14px; margin-top: 10px; }
-
-        /* الشريط السفلي للتنقل */
         #app-container { display: none; }
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
@@ -77,19 +74,13 @@
             background: #d08c9e; color: white; border-radius: 50%;
             padding: 2px 6px; font-size: 12px; min-width: 18px;
         }
-
-        /* الشاشات */
         .screen { display: none; padding: 20px 20px 70px; }
         .screen.active { display: block; }
-
-        /* الصفحة الرئيسية */
         .stories-container {
             display: flex; gap: 15px; overflow-x: auto;
             padding: 15px 0; margin-bottom: 20px;
         }
-        .story {
-            text-align: center; cursor: pointer; min-width: 70px;
-        }
+        .story { text-align: center; cursor: pointer; min-width: 70px; }
         .story-avatar {
             width: 60px; height: 60px; border-radius: 50%;
             border: 3px solid #2d6a4f; padding: 2px; background: white;
@@ -99,101 +90,43 @@
             background: #d08c9e; color: white; font-size: 30px;
             display: flex; align-items: center; justify-content: center;
         }
-
-        /* المنشورات */
         .post {
             background: white; border-radius: 16px; padding: 15px;
             margin-bottom: 20px; box-shadow: var(--shadow);
         }
-        .post-header {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-        }
-        .post-avatar {
-            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
-            border: 2px solid #d08c9e;
-        }
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .post-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #d08c9e; }
         .post-author { font-weight: bold; color: #1a1a1a; text-decoration: none; }
         .post-time { color: #888; font-size: 12px; }
         .post-content { margin: 10px 0; line-height: 1.6; }
         .post-image { width: 100%; border-radius: 12px; margin: 10px 0; cursor: pointer; }
         .post-video { width: 100%; border-radius: 12px; margin: 10px 0; }
-        .post-actions {
-            display: flex; gap: 20px; margin: 10px 0;
-            padding-top: 10px; border-top: 1px solid #eee;
-        }
-        .post-actions button {
-            background: none; border: none; cursor: pointer;
-            font-size: 18px; color: #888; display: flex; align-items: center; gap: 5px;
-        }
+        .post-actions { display: flex; gap: 20px; margin: 10px 0; padding-top: 10px; border-top: 1px solid #eee; }
+        .post-actions button { background: none; border: none; cursor: pointer; font-size: 18px; color: #888; display: flex; align-items: center; gap: 5px; }
         .post-actions button.liked { color: #d08c9e; }
         .comment-section { margin-top: 10px; }
-        .comment {
-            padding: 5px 0; font-size: 14px; border-bottom: 1px dotted #eee;
-        }
+        .comment { padding: 5px 0; font-size: 14px; border-bottom: 1px dotted #eee; }
         .comment strong { color: #2d6a4f; }
-        .comment-input {
-            display: flex; gap: 5px; margin-top: 10px;
-        }
-        .comment-input input {
-            flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px;
-            font-family: 'Cairo', sans-serif;
-        }
-        .comment-input button {
-            background: #2d6a4f; color: white; border: none; border-radius: 20px;
-            padding: 8px 15px; cursor: pointer;
-        }
-
-        /* الملف الشخصي */
-        .profile-header {
-            text-align: center; padding: 20px 0;
-        }
-        .profile-avatar {
-            width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
-            border: 4px solid #d08c9e; margin-bottom: 10px;
-        }
+        .comment-input { display: flex; gap: 5px; margin-top: 10px; }
+        .comment-input input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; font-family: 'Cairo', sans-serif; }
+        .comment-input button { background: #2d6a4f; color: white; border: none; border-radius: 20px; padding: 8px 15px; cursor: pointer; }
+        .profile-header { text-align: center; padding: 20px 0; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #d08c9e; margin-bottom: 10px; }
         .profile-username { font-size: 22px; font-weight: bold; }
         .profile-bio { color: #666; margin: 10px 0; }
-        .profile-stats {
-            display: flex; justify-content: space-around; margin: 20px 0;
-        }
+        .profile-stats { display: flex; justify-content: space-around; margin: 20px 0; }
         .profile-stats div { text-align: center; }
-        .follow-btn {
-            background: #2d6a4f; color: white; border: none;
-            padding: 8px 25px; border-radius: 25px; cursor: pointer;
-            font-family: 'Cairo', sans-serif;
-        }
+        .follow-btn { background: #2d6a4f; color: white; border: none; padding: 8px 25px; border-radius: 25px; cursor: pointer; font-family: 'Cairo', sans-serif; }
         .follow-btn.following { background: #d08c9e; }
-
-        /* البحث */
-        .search-bar {
-            width: 100%; padding: 12px 20px; border: 1px solid #ddd;
-            border-radius: 25px; margin-bottom: 20px; font-family: 'Cairo', sans-serif;
-        }
+        .search-bar { width: 100%; padding: 12px 20px; border: 1px solid #ddd; border-radius: 25px; margin-bottom: 20px; font-family: 'Cairo', sans-serif; }
         .hashtag { color: #2d6a4f; font-weight: bold; cursor: pointer; }
         .mention { color: #d08c9e; font-weight: bold; }
-
-        /* الرسائل */
         .chat-list { list-style: none; }
-        .chat-item {
-            display: flex; align-items: center; gap: 15px;
-            padding: 15px; background: white; border-radius: 12px;
-            margin-bottom: 10px; cursor: pointer; box-shadow: var(--shadow);
-        }
+        .chat-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; cursor: pointer; box-shadow: var(--shadow); }
         .chat-item img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
         .chat-item .last-msg { color: #888; font-size: 14px; }
-
-        /* الإشعارات */
-        .notification {
-            background: white; padding: 15px; border-radius: 12px;
-            margin-bottom: 10px; box-shadow: var(--shadow);
-        }
-
-        /* إضافات عامة */
-        .overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center;
-            z-index: 1000;
-        }
+        .notification { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: var(--shadow); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -234,8 +167,19 @@
         messagingSenderId: "230767210257",
         appId: "1:230767210257:web:1bc7b7514552d7177c66b0"
     };
+    
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    
+    // اختبار اتصال Firestore بصمت
+    (async () => {
+        try {
+            await db.collection('_test_').doc('_conn_').set({ ok: true });
+            console.log('✅ Firestore متصل');
+        } catch (e) {
+            console.error('❌ Firestore غير متصل:', e.message);
+        }
+    })();
 
     // ==================== Supabase ====================
     const SUPABASE_URL = "https://newffwrgwdatwtfawava.supabase.co";
@@ -247,65 +191,65 @@
     let currentUser = null;
     let allUsers = [];
 
-    function escapeHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-
-    function extractYouTubeID(url) {
-        const patterns = [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?#]+)/];
-        for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match) return match[1];
-        }
-        return null;
-    }
-
-    function formatTime(timestamp) {
-        if (!timestamp || !timestamp.toDate) return 'الآن';
-        const now = new Date();
-        const date = timestamp.toDate();
-        const diff = Math.floor((now - date) / 1000);
-        if (diff < 60) return 'الآن';
-        if (diff < 3600) return Math.floor(diff / 60) + ' دقيقة';
-        if (diff < 86400) return Math.floor(diff / 3600) + ' ساعة';
-        return date.toLocaleDateString('ar-EG');
-    }
+    function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+    function extractYouTubeID(url) { const patterns = [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?#]+)/]; for (const p of patterns) { const m = url.match(p); if (m) return m[1]; } return null; }
+    function formatTime(timestamp) { if (!timestamp || !timestamp.toDate) return 'الآن'; const d = new Date(); const t = timestamp.toDate(); const diff = Math.floor((d - t) / 1000); if (diff < 60) return 'الآن'; if (diff < 3600) return Math.floor(diff / 60) + ' دقيقة'; if (diff < 86400) return Math.floor(diff / 3600) + ' ساعة'; return t.toLocaleDateString('ar-EG'); }
 
     async function getUserData(username) {
-        const doc = await db.collection('users').doc(username).get();
-        if (doc.exists) return { uid: doc.id, ...doc.data() };
-        const newUser = {
-            username: username,
-            avatar: '',
-            bio: '',
-            following: [],
-            followers: [],
-            joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            saved: []
-        };
-        await db.collection('users').doc(username).set(newUser);
-        return { uid: username, ...newUser };
+        const docRef = db.collection('users').doc(username);
+        const doc = await docRef.get();
+        if (doc.exists) {
+            return { uid: doc.id, ...doc.data() };
+        } else {
+            const newUser = {
+                username: username,
+                avatar: '',
+                bio: '',
+                following: [],
+                followers: [],
+                saved: [],
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await docRef.set(newUser);
+            return { uid: username, ...newUser };
+        }
     }
 
-    // ==================== الدخول ====================
+    // ==================== دالة الدخول المُصلحة ====================
     async function login() {
         const username = document.getElementById('username-input').value.trim();
         const password = document.getElementById('password-input').value;
         const errorMsg = document.getElementById('error-msg');
-        if (!username) { errorMsg.textContent = '⚠️ الرجاء إدخال اسم المستخدم'; return; }
-        if (password !== SECRET_PASSWORD) { errorMsg.textContent = '❌ كلمة المرور غير صحيحة'; return; }
-        currentUser = await getUserData(username);
-        sessionStorage.setItem('blog_auth', 'true');
-        sessionStorage.setItem('blog_user', username);
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-container').style.display = 'block';
-        navigateTo('home');
-        loadInitialData();
+        
+        errorMsg.textContent = '';
+
+        if (!username) {
+            errorMsg.textContent = '⚠️ الرجاء إدخال اسم المستخدم';
+            return;
+        }
+        if (password !== SECRET_PASSWORD) {
+            errorMsg.textContent = '❌ كلمة المرور غير صحيحة';
+            return;
+        }
+
+        try {
+            currentUser = await getUserData(username);
+            sessionStorage.setItem('blog_auth', 'true');
+            sessionStorage.setItem('blog_user', username);
+            
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            
+            navigateTo('home');
+            loadInitialData();
+        } catch (error) {
+            console.error('فشل تسجيل الدخول:', error);
+            errorMsg.textContent = '❌ فشل الاتصال بقاعدة البيانات. تأكد من تفعيل Firestore في وضع الاختبار.';
+        }
     }
 
-    window.onload = () => {
+    // استعادة الجلسة السابقة
+    (function restoreSession() {
         if (sessionStorage.getItem('blog_auth') === 'true') {
             const savedUser = sessionStorage.getItem('blog_user');
             if (savedUser) {
@@ -315,10 +259,13 @@
                     document.getElementById('app-container').style.display = 'block';
                     navigateTo('home');
                     loadInitialData();
+                }).catch(err => {
+                    console.error('فشل استعادة الجلسة:', err);
+                    sessionStorage.clear();
                 });
             }
         }
-    };
+    })();
 
     async function loadInitialData() {
         await loadAllUsers();
@@ -473,9 +420,7 @@
         loadHomePosts();
     }
 
-    function focusComment(postId) {
-        document.getElementById(`comment-input-${postId}`).focus();
-    }
+    function focusComment(postId) { document.getElementById(`comment-input-${postId}`).focus(); }
 
     async function deletePostConfirm(postId) {
         if (confirm('متأكد من حذف المنشور؟')) {
@@ -505,7 +450,6 @@
     }
 </script>
 <script>
-    // ==================== إنشاء منشور جديد مع رفع وسائط ====================
     function openNewPost() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('post-screen').classList.add('active');
@@ -549,9 +493,9 @@
             const fileName = `${currentUser.username}_${Date.now()}.${fileExt}`;
             const { data, error } = await supabase.storage.from('media').upload(fileName, file);
             if (error) { alert('❌ فشل رفع الملف: ' + error.message); return; }
-            const { publicURL } = supabase.storage.from('media').getPublicUrl(fileName);
-            if (file.type.startsWith('image/')) imageUrl = publicURL;
-            else videoUrl = publicURL;
+            const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
+            if (file.type.startsWith('image/')) imageUrl = urlData.publicUrl;
+            else videoUrl = urlData.publicUrl;
         }
 
         await db.collection('posts').add({
@@ -570,7 +514,6 @@
         navigateTo('home');
     }
 
-    // ==================== القصص ====================
     async function addStory() {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -581,10 +524,10 @@
             const fileName = `${currentUser.username}_story_${Date.now()}.${file.name.split('.').pop()}`;
             const { error } = await supabase.storage.from('media').upload(fileName, file);
             if (error) { alert('فشل رفع القصة'); return; }
-            const { publicURL } = supabase.storage.from('media').getPublicUrl(fileName);
+            const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
             await db.collection('stories').add({
                 username: currentUser.username,
-                mediaUrl: publicURL,
+                mediaUrl: urlData.publicUrl,
                 type: file.type.startsWith('image/') ? 'image' : 'video',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -608,11 +551,7 @@
         });
     }
 
-    // ==================== الملف الشخصي ====================
-    async function navigateToProfile(username) {
-        navigateTo('profile');
-        loadProfile(username);
-    }
+    async function navigateToProfile(username) { navigateTo('profile'); loadProfile(username); }
 
     async function loadProfile(username) {
         const container = document.getElementById('profile-screen');
@@ -684,16 +623,15 @@
             const fileName = `avatar_${currentUser.username}.${file.name.split('.').pop()}`;
             const { error } = await supabase.storage.from('media').upload(fileName, file, { upsert: true });
             if (error) { alert('فشل رفع الصورة'); return; }
-            const { publicURL } = supabase.storage.from('media').getPublicUrl(fileName);
-            await db.collection('users').doc(currentUser.username).update({ avatar: publicURL });
-            currentUser.avatar = publicURL;
+            const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
+            await db.collection('users').doc(currentUser.username).update({ avatar: urlData.publicUrl });
+            currentUser.avatar = urlData.publicUrl;
             loadProfile(currentUser.username);
         };
         fileInput.click();
     }
 </script>
 <script>
-    // ==================== الإشعارات ====================
     async function loadNotifications() {
         const container = document.getElementById('notifications-screen');
         const snapshot = await db.collection('notifications').where('recipient', '==', currentUser.username).orderBy('timestamp', 'desc').limit(30).get();
@@ -710,11 +648,9 @@
         const snapshot = await db.collection('notifications').where('recipient', '==', currentUser.username).where('read', '==', false).get();
         const badge = document.getElementById('notif-badge');
         const count = snapshot.size;
-        if (count > 0) { badge.textContent = count; badge.style.display = 'inline'; }
-        else badge.style.display = 'none';
+        if (count > 0) { badge.textContent = count; badge.style.display = 'inline'; } else badge.style.display = 'none';
     }
 
-    // ==================== الرسائل ====================
     async function loadMessages() {
         const container = document.getElementById('messages-screen');
         const snapshot = await db.collection('chats').where('participants', 'array-contains', currentUser.username).get();
@@ -775,7 +711,6 @@
         openChat(chatId);
     }
 
-    // ==================== البحث ====================
     async function loadExplore() {
         const container = document.getElementById('explore-screen');
         container.innerHTML = `<input type="text" class="search-bar" placeholder="🔍 بحث عن مستخدمين أو هاشتاغ..." onkeyup="searchExplore(this.value)"><div id="search-results"></div>`;
@@ -792,7 +727,6 @@
         document.getElementById('search-results').innerHTML = html;
     }
 
-    // ==================== مشاركة وحفظ ====================
     function sharePost(postId) {
         const url = window.location.href.split('?')[0] + '?post=' + postId;
         if (navigator.share) navigator.share({ url: url });
